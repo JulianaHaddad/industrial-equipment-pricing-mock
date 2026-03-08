@@ -1,0 +1,253 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Industrial Equipment Pricing API",
+    "description": "API de precificação de equipamentos industriais para integração com Agentforce (Salesforce). Fornece preços em tempo real, detalhes de produtos e tabelas de desconto para revendedores LATAM.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Industrial Distributor – LATAM",
+      "email": "api-support@industrial-latam.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://seu-app.railway.app",
+      "description": "Servidor de Produção (Railway)"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor Local (desenvolvimento)"
+    }
+  ],
+  "paths": {
+    "/prices": {
+      "get": {
+        "operationId": "getAllPrices",
+        "summary": "Listar todos os preços",
+        "description": "Retorna a lista completa de preços de todos os produtos disponíveis no catálogo.",
+        "tags": ["Prices"],
+        "responses": {
+          "200": {
+            "description": "Lista de preços retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Price" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/prices/{product_code}": {
+      "get": {
+        "operationId": "getPriceByProductCode",
+        "summary": "Consultar preço por código de produto",
+        "description": "Retorna o preço atualizado de um produto específico pelo seu código SKU. Este é o endpoint principal utilizado pelo Agentforce para consultas de preço em tempo real.",
+        "tags": ["Prices"],
+        "parameters": [
+          {
+            "name": "product_code",
+            "in": "path",
+            "required": true,
+            "description": "Código SKU do produto (ex: SKU-COMP-001)",
+            "schema": {
+              "type": "string",
+              "example": "SKU-COMP-001"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Preço do produto retornado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Price" },
+                "example": {
+                  "id": 1,
+                  "product_code": "SKU-COMP-001",
+                  "product_name": "Compressor de Ar Industrial XR-200",
+                  "unit_price": 4850.00,
+                  "currency": "USD",
+                  "price_brl": 29100.00,
+                  "price_mxn": 83220.00,
+                  "price_ars": 4656000.00,
+                  "discount_reseller_pct": 12,
+                  "discount_volume_10_pct": 5,
+                  "discount_volume_20_pct": 8,
+                  "last_updated": "2026-03-01T00:00:00Z"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Produto não encontrado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "operationId": "getAllProducts",
+        "summary": "Listar todos os produtos",
+        "description": "Retorna o catálogo completo de produtos com especificações técnicas.",
+        "tags": ["Products"],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Filtrar por categoria (ex: Compressores, Bombas, Motores)",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de produtos retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Product" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "operationId": "getProductById",
+        "summary": "Consultar produto por SKU",
+        "description": "Retorna os detalhes completos de um produto específico pelo seu código SKU.",
+        "tags": ["Products"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Código SKU do produto",
+            "schema": { "type": "string", "example": "SKU-COMP-001" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Produto retornado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Product" }
+              }
+            }
+          },
+          "404": {
+            "description": "Produto não encontrado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "operationId": "getCategories",
+        "summary": "Listar categorias",
+        "description": "Retorna todas as categorias de produtos disponíveis.",
+        "tags": ["Categories"],
+        "responses": {
+          "200": {
+            "description": "Categorias retornadas com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Category" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Price": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "product_code": { "type": "string", "example": "SKU-COMP-001", "description": "Código SKU único do produto" },
+          "product_name": { "type": "string", "example": "Compressor de Ar Industrial XR-200" },
+          "unit_price": { "type": "number", "format": "float", "example": 4850.00, "description": "Preço unitário em USD" },
+          "currency": { "type": "string", "example": "USD" },
+          "price_brl": { "type": "number", "format": "float", "example": 29100.00, "description": "Preço convertido em BRL" },
+          "price_mxn": { "type": "number", "format": "float", "example": 83220.00, "description": "Preço convertido em MXN" },
+          "price_ars": { "type": "number", "format": "float", "example": 4656000.00, "description": "Preço convertido em ARS" },
+          "discount_reseller_pct": { "type": "integer", "example": 12, "description": "Desconto padrão para revendedores (%)" },
+          "discount_volume_10_pct": { "type": "integer", "example": 5, "description": "Desconto adicional para pedidos acima de 10 unidades (%)" },
+          "discount_volume_20_pct": { "type": "integer", "example": 8, "description": "Desconto adicional para pedidos acima de 20 unidades (%)" },
+          "last_updated": { "type": "string", "format": "date-time", "example": "2026-03-01T00:00:00Z" }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "SKU-COMP-001" },
+          "name": { "type": "string", "example": "Compressor de Ar Industrial XR-200" },
+          "category": { "type": "string", "example": "Compressores" },
+          "subcategory": { "type": "string", "example": "Pistão" },
+          "brand": { "type": "string", "example": "TechAir" },
+          "model": { "type": "string", "example": "XR-200" },
+          "unit_price": { "type": "number", "format": "float", "example": 4850.00 },
+          "currency": { "type": "string", "example": "USD" },
+          "stock": { "type": "integer", "example": 42 },
+          "lead_time_days": { "type": "integer", "example": 5 },
+          "description": { "type": "string" },
+          "specs": { "type": "object", "additionalProperties": true },
+          "compatible_models": { "type": "array", "items": { "type": "string" } },
+          "warranty_months": { "type": "integer", "example": 24 },
+          "country_availability": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string", "example": "Product not found" },
+          "code": { "type": "integer", "example": 404 }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token de autenticação Bearer. Para o mock/PoC, utilize o valor: mock-token-latam-2026"
+      }
+    }
+  },
+  "security": [{ "BearerAuth": [] }],
+  "tags": [
+    { "name": "Prices", "description": "Endpoints de consulta de preços — utilizados pelo Agentforce" },
+    { "name": "Products", "description": "Endpoints do catálogo de produtos com especificações técnicas" },
+    { "name": "Categories", "description": "Endpoints de categorias do catálogo" }
+  ]
+}
