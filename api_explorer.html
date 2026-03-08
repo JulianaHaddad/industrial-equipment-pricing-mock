@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -9,258 +11,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-<style>
-
-:root{
---bg:#080c14;
---surface:#0d1520;
---surface2:#111c2e;
---border:#1e2f47;
---accent:#00a1e0;
---accent2:#6b2fd9;
---success:#00c896;
---warn:#f59e0b;
---error:#ef4444;
---text:#e2e8f0;
---muted:#64748b;
---tag-bg:#0f2340;
-}
-
-*{margin:0;padding:0;box-sizing:border-box}
-
-body{
-background:var(--bg);
-color:var(--text);
-font-family:'Syne',sans-serif;
-min-height:100vh;
-overflow-x:hidden;
-}
-
-/* Background grid */
-
-body::before{
-content:'';
-position:fixed;
-inset:0;
-background-image:
-linear-gradient(rgba(0,161,224,0.03) 1px, transparent 1px),
-linear-gradient(90deg, rgba(0,161,224,0.03) 1px, transparent 1px);
-background-size:40px 40px;
-pointer-events:none;
-z-index:0;
-}
-
-.container{
-position:relative;
-z-index:1;
-max-width:1100px;
-margin:0 auto;
-padding:0 24px;
-}
-
-/* Header */
-
-header{
-border-bottom:1px solid var(--border);
-padding:20px 0;
-background:rgba(8,12,20,0.95);
-position:sticky;
-top:0;
-z-index:100;
-backdrop-filter:blur(12px);
-}
-
-.header-inner{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:16px;
-}
-
-.logo{
-display:flex;
-align-items:center;
-gap:12px;
-}
-
-.logo-icon{
-width:36px;
-height:36px;
-background:linear-gradient(135deg,var(--accent),var(--accent2));
-border-radius:8px;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:18px;
-}
-
-.logo-text{
-font-size:15px;
-font-weight:700;
-color:var(--text);
-}
-
-/* API name standardized */
-
-.logo-sub{
-font-size:11px;
-color:var(--muted);
-font-family:'JetBrains Mono',monospace;
-}
-
-.badge{
-font-family:'JetBrains Mono',monospace;
-font-size:11px;
-padding:4px 10px;
-border-radius:20px;
-font-weight:600;
-background:rgba(0,200,150,0.12);
-color:var(--success);
-border:1px solid rgba(0,200,150,0.25);
-animation:pulse-badge 2s ease-in-out infinite;
-}
-
-@keyframes pulse-badge{
-0%,100%{opacity:1}
-50%{opacity:.7}
-}
-
-/* Hero */
-
-.hero{
-padding:56px 0 40px;
-text-align:center;
-}
-
-.hero-eyebrow{
-font-family:'JetBrains Mono',monospace;
-font-size:12px;
-color:var(--accent);
-letter-spacing:3px;
-text-transform:uppercase;
-margin-bottom:16px;
-}
-
-.hero h1{
-font-size:clamp(28px,5vw,48px);
-font-weight:800;
-line-height:1.1;
-margin-bottom:16px;
-background:linear-gradient(135deg,#fff 40%,var(--accent));
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-}
-
-.hero p{
-color:var(--muted);
-font-size:16px;
-max-width:520px;
-margin:0 auto 32px;
-line-height:1.6;
-}
-
-/* Base URL */
-
-.base-url-box{
-display:inline-flex;
-align-items:center;
-gap:10px;
-background:var(--surface);
-border:1px solid var(--border);
-border-radius:10px;
-padding:12px 20px;
-font-family:'JetBrains Mono',monospace;
-font-size:13px;
-color:var(--accent);
-}
-
-.base-url-box span{
-color:var(--muted);
-font-size:11px;
-}
-
-/* Token */
-
-.token-box{
-display:flex;
-align-items:center;
-justify-content:center;
-gap:10px;
-margin-top:16px;
-font-family:'JetBrains Mono',monospace;
-font-size:12px;
-color:var(--muted);
-}
-
-.token-value{
-background:rgba(107,47,217,0.15);
-border:1px solid rgba(107,47,217,0.3);
-color:#a78bfa;
-padding:4px 12px;
-border-radius:6px;
-}
-
-/* Section */
-
-.section{padding:32px 0}
-
-.section-title{
-font-size:11px;
-font-weight:700;
-letter-spacing:3px;
-text-transform:uppercase;
-color:var(--muted);
-margin-bottom:20px;
-display:flex;
-align-items:center;
-gap:10px;
-}
-
-.section-title::after{
-content:'';
-flex:1;
-height:1px;
-background:var(--border);
-}
-
-/* Salesforce Integration Box */
-
-.sf-box{
-background:var(--surface);
-border:1px solid var(--border);
-border-radius:12px;
-padding:20px;
-margin-bottom:12px;
-}
-
-.sf-box h3{
-font-size:13px;
-font-weight:700;
-color:var(--accent);
-margin-bottom:12px;
-}
-
-.sf-code{
-background:var(--bg);
-border:1px solid var(--border);
-border-radius:8px;
-padding:12px 16px;
-font-family:'JetBrains Mono',monospace;
-font-size:12px;
-line-height:1.6;
-color:#a5f3fc;
-}
-
-footer{
-border-top:1px solid var(--border);
-padding:24px 0;
-text-align:center;
-color:var(--muted);
-font-size:12px;
-font-family:'JetBrains Mono',monospace;
-}
-
-</style>
 </head>
 
 <body>
@@ -270,24 +20,29 @@ font-family:'JetBrains Mono',monospace;
 <div class="container header-inner">
 
 <div class="logo">
+
 <div class="logo-icon">🏭</div>
 
 <div>
 <div class="logo-text">Industrial Equipment Pricing API</div>
 <div class="logo-sub">v1.0.0 · LATAM Pricing Mock</div>
 </div>
+
 </div>
 
 <div class="badge">● MOCK LIVE</div>
 
 </div>
+
 </header>
 
 <main class="container">
 
 <div class="hero">
 
-<div class="hero-eyebrow">Agentforce PoC · Panel Interview</div>
+<div class="hero-eyebrow">
+Agentforce PoC · Panel Interview
+</div>
 
 <h1>
 Industrial Equipment<br>
@@ -295,23 +50,110 @@ Pricing API
 </h1>
 
 <p>
-API mockada com dados de equipamentos industriais para demonstração
-de integração com Agentforce via Flow HTTP Callout e Named Credential.
+API mockada com dados de equipamentos industriais para integração com
+Agentforce via Flow HTTP Callout utilizando Named Credential.
 </p>
 
 <div class="base-url-box">
+
 <span>BASE URL</span>
-<strong>
+
+<strong id="baseUrl">
 https://industrial-equipment-pricing-mock-production.up.railway.app
 </strong>
+
 </div>
 
 <div class="token-box">
+
 <span>Bearer Token:</span>
-<span class="token-value">mock-token-latam-2026</span>
+
+<span class="token-value">
+mock-token-latam-2026
+</span>
+
 </div>
 
 </div>
+
+<!-- CATÁLOGO DE PRODUTOS -->
+
+<div class="section">
+
+<div class="section-title">
+Catálogo de Produtos — Clique para consultar preço
+</div>
+
+<div class="products-grid" id="productsGrid"></div>
+
+</div>
+
+<!-- API EXPLORER -->
+
+<div class="section">
+
+<div class="section-title">
+API Explorer — Teste os endpoints
+</div>
+
+<div class="explorer">
+
+<div class="explorer-header">
+
+<span class="method-badge">GET</span>
+
+<span class="endpoint-display">
+/prices/<span class="param">{product_code}</span>
+</span>
+
+<span style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;">
+→ endpoint usado pelo Agentforce
+</span>
+
+</div>
+
+<div class="explorer-body">
+
+<div class="url-input-group">
+
+<input class="url-input"
+id="urlInput"
+type="text"
+placeholder="/prices/{product_code}"
+value="/prices/SKU-COMP-001" />
+
+<button class="btn-send" id="sendBtn" onclick="callAPI()">
+▶ Executar
+</button>
+
+</div>
+
+<div class="quick-buttons" id="quickBtns"></div>
+
+<div class="response-panel">
+
+<div class="response-header">
+
+<span class="status-pill status-waiting" id="statusPill">
+Aguardando...
+</span>
+
+<span class="response-meta" id="responseMeta"></span>
+
+</div>
+
+<div class="response-body" id="responseBody">
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
 
 <div class="section">
 
@@ -323,15 +165,21 @@ Configuração Salesforce
 
 <h3>Named Credential — Flow HTTP Callout</h3>
 
+<div class="sf-label">
+Endpoint no Flow (Get_Product_Price_From_API)
+</div>
+
 <div class="sf-code">
 
 {!$Credential.PricingAPI_NC}/prices/{!productCode}
 
 Method: GET
 
-Header: Authorization → Bearer mock-token-latam-2026
+Header:
+Authorization → Bearer mock-token-latam-2026
 
-Timeout: 10000ms
+Timeout:
+10000ms (10s)
 
 </div>
 
@@ -339,7 +187,7 @@ Timeout: 10000ms
 
 <div class="sf-box">
 
-<h3>Mapeamento Flow → Resposta da API</h3>
+<h3>Mapeamento de campos — Flow Assignment</h3>
 
 <div class="sf-code">
 
@@ -361,16 +209,16 @@ lastUpdated   ← {!httpResponse.body.last_updated}
 
 <div class="sf-box">
 
-<h3>Resposta simulada do Agentforce</h3>
+<h3>Resposta do Agentforce ao parceiro</h3>
 
 <div class="sf-code">
 
 "O Compressor de Ar Industrial XR-200 (SKU-COMP-001)
-tem o preço unitário de USD 4.850,00 (BRL 29.100,00).
+tem preço unitário de USD 4.850,00 (BRL 29.100,00).
 
 Como revendedor você possui 12% de desconto.
 
-Deseja que eu crie uma cotação formal?"
+Deseja que eu gere uma cotação?"
 
 </div>
 
@@ -385,7 +233,7 @@ Deseja que eu crie uma cotação formal?"
 <div class="container">
 
 Industrial Equipment Pricing API  
-Mock API para Agentforce PoC · Salesforce Panel Interview
+Mock API para Agentforce PoC
 
 </div>
 
@@ -394,30 +242,16 @@ Mock API para Agentforce PoC · Salesforce Panel Interview
 <script>
 
 /*
+
 Mock API Simulation
 
-No external network request is executed.
-
-The real API endpoint is available at:
+A API está disponível em:
 https://industrial-equipment-pricing-mock-production.up.railway.app
-
-Architecture used in the PoC:
-
-Agentforce
-   ↓
-Action
-   ↓
-Flow
-   ↓
-HTTP Callout
-   ↓
-Named Credential
-   ↓
-External Pricing API
 
 */
 
 </script>
 
 </body>
+
 </html>
