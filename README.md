@@ -147,9 +147,18 @@ Resposta esperada:
 
 ```
 {
-  "product_code": "SKU-COMP-001",
-  "currency": "USD",
-  "price": 1250
+    "id": 1,
+    "product_code": "SKU-COMP-001",
+    "product_name": "Compressor de Ar Industrial XR-200",
+    "unit_price": 4850,
+    "currency": "USD",
+    "price_brl": 29100,
+    "price_mxn": 83220,
+    "price_ars": 4656000,
+    "discount_reseller_pct": 12,
+    "discount_volume_10_pct": 5,
+    "discount_volume_20_pct": 8,
+    "last_updated": "2026-03-01T00:00:00Z"
 }
 ```
 
