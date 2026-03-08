@@ -1,0 +1,14 @@
+{
+  "name": "industrial-equipment-pricing-api",
+  "version": "1.0.0",
+  "description": "Mock Pricing API for Industrial Equipment Distributor — LATAM (Agentforce PoC)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "SKIP_AUTH=true node server.js"
+  },
+  "keywords": ["salesforce", "agentforce", "mock-api", "industrial", "latam"],
+  "dependencies": {
+    "json-server": "0.17.4"
+  }
+}
