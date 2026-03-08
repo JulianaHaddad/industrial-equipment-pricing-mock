@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Industrial Equipment Pricing API — Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #080c14;
+      --surface: #0d1520;
+      --surface2: #111c2e;
+      --border: #1e2f47;
+      --accent: #00a1e0;
+      --accent2: #6b2fd9;
+      --success: #00c896;
+      --warn: #f59e0b;
+      --error: #ef4444;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --tag-bg: #0f2340;
+    }
+
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface2: #f1f5f9;
+      --border: #e2e8f0;
+      --accent: #0284c7;
+      --accent2: #7c3aed;
+      --success: #059669;
+      --warn: #d97706;
+      --error: #dc2626;
+      --text: #0f172a;
+      --muted: #64748b;
+      --tag-bg: #e0f2fe;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,161,224,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,161,224,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 1;
+      transition: opacity 0.3s;
+    }
+
+    [data-theme="light"] body::before {
+      opacity: 0.3;
+    }
+
+    .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+
+    .logo-text { font-size: 15px; font-weight: 700; }
+    .logo-sub  { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      background: rgba(0,200,150,0.12);
+      color: var(--success);
+      border: 1px solid rgba(0,200,150,0.25);
+      animation: pulse-badge 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-badge {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.7; }
+    }
+
+    .theme-toggle {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      transform: scale(1.05);
+    }
+
+    .hero {
+      padding: 56px 0 40px;
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--text) 40%, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 16px;
+      max-width: 540px;
+      margin: 0 auto 32px;
+      line-height: 1.6;
+    }
+
+    .base-url-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent);
+      margin: 16px auto;
+    }
+
+    .token-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .token-value {
+      background: rgba(107,47,217,0.15);
+      border: 1px solid rgba(107,47,217,0.3);
+      color: #a78bfa;
+      padding: 4px 12px;
+      border-radius: 6px;
+    }
+
+    .section { padding: 40px 0; }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Search and Filter */
+    .catalog-controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px 10px 40px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus { border-color: var(--accent); }
+
+    .search-box::before {
+      content: '🔍';
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+    }
+
+    .category-filter {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      font-size: 11px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0,161,224,0.06);
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .view-btn {
+      padding: 6px 12px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+      font-size: 16px;
+    }
+
+    .view-btn.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* Grid View */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .products-grid.hidden { display: none; }
+
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-card:hover,
+    .product-card.active {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,161,224,0.12);
+    }
+
+    .product-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .product-card:hover::before,
+    .product-card.active::before { opacity: 1; }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .card-sku, .card-category {
+      font-size: 10px;
+      padding: 3px 9px;
+      border-radius: 4px;
+    }
+
+    .card-sku {
+      color: var(--accent);
+      background: rgba(0,161,224,0.1);
+      border: 1px solid rgba(0,161,224,0.25);
+    }
+
+    .card-category {
+      color: var(--muted);
+      background: var(--tag-bg);
+    }
+
+    .card-name   { font-size: 14px; font-weight: 700; margin-bottom: 6px; line-height: 1.3; }
+    .card-brand  { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+    .card-price  { font-family: 'JetBrains Mono',monospace; font-size: 21px; font-weight: 700; color: var(--success); }
+    .card-price span { font-size: 13px; color: var(--muted); margin-left: 6px; }
+    .card-discount { font-size: 11px; color: var(--warn); margin-top: 6px; }
+
+    .card-stock {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 10px rgba(0,200,150,0.6);
+    }
+
+    /* Table View */
+    .products-table {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 48px;
+    }
+
+    .products-table.hidden { display: none; }
+
+    .products-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .products-table th {
+      background: var(--surface2);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .products-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .products-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .products-table tr:hover {
+      background: var(--surface2);
+      cursor: pointer;
+    }
+
+    .table-sku {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      background: rgba(0,161,224,0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .table-category {
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--tag-bg);
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .table-price {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--success);
+    }
+
+    /* Chart */
+    .chart-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 48px;
+    }
+
+    .chart-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+
+    #priceChart {
+      width: 100%;
+      height: 300px;
+    }
+
+    .explorer {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 48px;
+    }
+
+    .explorer-header {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .method-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(0,200,150,0.15);
+      color: var(--success);
+      border: 1px solid rgba(0,200,150,0.3);
+    }
+
+    .endpoint-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .endpoint-display .param { color: var(--warn); }
+
+    .explorer-body { padding: 20px; }
+
+    .url-input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .url-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .url-input:focus { border-color: var(--accent); }
+
+    .btn-send, .btn-copy, .btn-export {
+      background: linear-gradient(135deg, var(--accent), #0077a8);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-send:hover, .btn-copy:hover, .btn-export:hover { 
+      transform: translateY(-1px); 
+      box-shadow: 0 4px 16px rgba(0,161,224,0.3); 
+    }
+
+    .btn-copy, .btn-export {
+      background: linear-gradient(135deg, var(--accent2), #5b21b6);
+      font-size: 12px;
+      padding: 6px 16px;
+    }
+
+    .quick-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .quick-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .quick-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0,161,224,0.06);
+    }
+
+    .response-panel {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .response-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .status-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .status-200 { background: rgba(0,200,150,0.15); color: var(--success); border: 1px solid rgba(0,200,150,0.3); }
+    .status-404 { background: rgba(239,68,68,0.15); color: var(--error); border: 1px solid rgba(239,68,68,0.3); }
+    .status-waiting { background: rgba(100,116,139,0.15); color: var(--muted); border: 1px solid var(--border); }
+
+    .response-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+
+    .response-body {
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      max-height: 380px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .json-key { color: #7dd3fc; }
+    .json-string { color: #86efac; }
+    .json-number { color: #fbbf24; }
+    .json-bool { color: #c084fc; }
+    .json-null { color: var(--muted); }
+
+    .response-body::-webkit-scrollbar { width: 6px; }
+    .response-body::-webkit-scrollbar-track { background: transparent; }
+    .response-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .loading-dots {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .loading-dots span {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: bounce 0.8s ease-in-out infinite;
+    }
+
+    .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); opacity: 0.5; }
+      50% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    /* History Panel */
+    .history-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .history-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .history-item {
+      padding: 8px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-item:hover {
+      border-color: var(--accent);
+      background: var(--surface2);
+    }
+
+    .history-time {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .sf-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .sf-box h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .sf-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #a5f3fc;
+      line-height: 1.6;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    .sf-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    #backToTop {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(0,161,224,0.9);
+      color: white;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+
+    #backToTop.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #backToTop:hover {
+      background: var(--accent);
+      transform: translateY(-3px);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      right: 24px;
+      background: var(--success);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 640px) {
+      .products-grid { grid-template-columns: 1fr; }
+      .url-input-group { flex-direction: column; gap: 12px; }
+      #backToTop { bottom: 16px; right: 16px; width: 44px; height: 44px; font-size: 22px; }
+      .catalog-controls { flex-direction: column; }
+      .category-filter { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <div class="logo">
+      <div class="logo-icon">🏭</div>
+      <div>
+        <div class="logo-text">Industrial Equipment Pricing API</div>
+        <div class="logo-sub">v1.0.0 · LATAM Pricing Mock</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="badge">● MOCK LIVE</div>
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+        <span id="themeIcon">🌙</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="hero">
+    <div class="hero-eyebrow">Agentforce PoC · Panel Interview</div>
+    <h1>Industrial Equipment<br>Pricing API</h1>
+    <p>API mockada com dados de equipamentos industriais para integração com Agentforce via Flow HTTP Callout utilizando Named Credential.</p>
+
+    <div class="base-url-box">
+      <span>BASE URL</span>
+      <strong id="baseUrl">https://industrial-equipment-pricing-mock-production.up.railway.app</strong>
+    </div>
+
+    <div class="token-box">
+      <span>Bearer Token:</span>
+      <span class="token-value">mock-token-latam-2026</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Catálogo de Produtos — 25 equipamentos disponíveis</div>
+    
+    <div class="catalog-controls">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Buscar produtos..." oninput="filterProducts()">
+      </div>
+      <div class="category-filter" id="categoryFilter"></div>
+      <div class="view-toggle">
+        <button class="view-btn active" id="gridViewBtn" onclick="switchView('grid')" title="Visualização em grade">⊞</button>
+        <button class="view-btn" id="tableViewBtn" onclick="switchView('table')" title="Visualização em tabela">≡</button>
+      </div>
+      <button class="btn-export" onclick="exportToCSV()">📥 Exportar CSV</button>
+    </div>
+
+    <div class="products-grid" id="productsGrid"></div>
+    
+    <div class="products-table hidden" id="productsTable">
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Produto</th>
+            <th>Categoria</th>
+            <th>Marca</th>
+            <th>Preço (USD)</th>
+            <th>Desconto</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Comparação de Preços</div>
+    <div class="chart-container">
+      <div class="chart-title">Top 10 Produtos por Preço (USD)</div>
+      <canvas id="priceChart"></canvas>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">API Explorer — Teste os endpoints</div>
+    
+    <div class="history-panel" id="historyPanel">
+      <div class="history-title">📋 Histórico de Consultas</div>
+      <div id="historyList"></div>
+    </div>
+
+    <div class="explorer">
+      <div class="explorer-header">
+        <span class="method-badge">GET</span>
+        <span class="endpoint-display">/prices/<span class="param">{product_code}</span></span>
+        <span style="font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace;">
+          → endpoint usado pelo Agentforce
+        </span>
+      </div>
+      <div class="explorer-body">
+        <div class="url-input-group">
+          <input class="url-input" id="urlInput" type="text" placeholder="/prices/SKU-COMP-001" value="/prices/SKU-COMP-001" aria-label="Endpoint da API" />
+          <button class="btn-send" id="sendBtn" onclick="callAPI()">▶ Executar</button>
+        </div>
+        <div class="quick-buttons" id="quickBtns"></div>
+        <div class="response-panel">
+          <div class="response-header">
+            <span class="status-pill status-waiting" id="statusPill">Aguardando...</span>
+            <span class="response-meta" id="responseMeta"></span>
+            <button class="btn-copy" onclick="copyResponse()">📋 Copiar JSON</button>
+          </div>
+          <div class="response-body" id="responseBody">
+Selecione um produto acima ou clique em "Executar" para ver a resposta da API
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Configuração Salesforce</div>
+    <div class="sf-box">
+      <h3>Named Credential — Flow HTTP Callout</h3>
+      <div class="sf-label">Endpoint no Flow (Get_Product_Price_From_API)</div>
+      <div class="sf-code">
+{!$Credential.PricingAPI_NC}/prices/{!productCode}
+Method: GET
+Header:
+  Authorization → Bearer mock-token-latam-2026
+Timeout:
+  10000ms (10s)
+      </div>
+    </div>
+    <div class="sf-box">
+      <h3>Mapeamento de campos — Flow Assignment</h3>
+      <div class="sf-code">
+productName ← {!httpResponse.body.product_name}
+unitPrice ← {!httpResponse.body.unit_price}
+currencyCode ← {!httpResponse.body.currency}
+priceBRL ← {!httpResponse.body.price_brl}
+discountPct ← {!httpResponse.body.discount_reseller_pct}
+lastUpdated ← {!httpResponse.body.last_updated}
+      </div>
+    </div>
+    <div class="sf-box">
+      <h3>Resposta do Agentforce ao parceiro</h3>
+      <div class="sf-code">
+"O Compressor de Ar Industrial XR-200 (SKU-COMP-001)
+tem preço unitário de USD 4.850,00 (BRL 29.100,00).
+Como revendedor você possui 12% de desconto.
+Deseja que eu gere uma cotação?"
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="container">
+    Industrial Equipment Pricing API · Mock API para Agentforce PoC · 25 Produtos Disponíveis
+  </div>
+</footer>
+
+<button id="backToTop" aria-label="Voltar ao topo da página">↑</button>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// MOCK DATA - 25 PRODUTOS COM NOVAS CATEGORIAS
+// ═══════════════════════════════════════════════════════════════════════════
+
+const MOCK_PRICES = {
+  // Compressores
+  "SKU-COMP-001": { id:1, product_code:"SKU-COMP-001", product_name:"Compressor de Ar Industrial XR-200", unit_price:4850.00, currency:"USD", price_brl:29100.00, price_mxn:83220.00, price_ars:4656000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-COMP-002": { id:2, product_code:"SKU-COMP-002", product_name:"Compressor de Parafuso Industrial SR-500", unit_price:12400.00, currency:"USD", price_brl:74400.00, price_mxn:212880.00, price_ars:11904000.00, discount_reseller_pct:15, discount_volume_10_pct:6, discount_volume_20_pct:10, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-COMP-003": { id:10, product_code:"SKU-COMP-003", product_name:"Secador Frigorífico de Ar SF-100", unit_price:3100.00, currency:"USD", price_brl:18600.00, price_mxn:53187.00, price_ars:2976000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-COMP-004": { id:11, product_code:"SKU-COMP-004", product_name:"Compressor Portátil CP-150", unit_price:1850.00, currency:"USD", price_brl:11100.00, price_mxn:31725.00, price_ars:1776000.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
+  
+  // Bombas
+  "SKU-BOMB-001": { id:3, product_code:"SKU-BOMB-001", product_name:"Bomba Hidráulica BH-50", unit_price:2750.00, currency:"USD", price_brl:16500.00, price_mxn:47190.00, price_ars:2640000.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-BOMB-002": { id:4, product_code:"SKU-BOMB-002", product_name:"Bomba Centrífuga BC-200", unit_price:1890.00, currency:"USD", price_brl:11340.00, price_mxn:32427.00, price_ars:1814400.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-BOMB-003": { id:12, product_code:"SKU-BOMB-003", product_name:"Bomba Submersível BS-300", unit_price:3400.00, currency:"USD", price_brl:20400.00, price_mxn:58308.00, price_ars:3264000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
+  
+  // Motores
+  "SKU-MOTOR-001": { id:5, product_code:"SKU-MOTOR-001", product_name:"Motor Elétrico Trifásico ME-300", unit_price:3200.00, currency:"USD", price_brl:19200.00, price_mxn:54912.00, price_ars:3072000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-MOTOR-002": { id:6, product_code:"SKU-MOTOR-002", product_name:"Motor a Diesel Industrial MD-450", unit_price:18500.00, currency:"USD", price_brl:111000.00, price_mxn:317370.00, price_ars:17760000.00, discount_reseller_pct:18, discount_volume_10_pct:7, discount_volume_20_pct:12, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-MOTOR-003": { id:13, product_code:"SKU-MOTOR-003", product_name:"Motor Elétrico Monofásico ME-150", unit_price:1650.00, currency:"USD", price_brl:9900.00, price_mxn:28305.00, price_ars:1584000.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
+  
+  // Peças de Reposição
+  "SKU-PECA-001": { id:7, product_code:"SKU-PECA-001", product_name:"Filtro de Ar FA-XR200", unit_price:85.00, currency:"USD", price_brl:510.00, price_mxn:1458.15, price_ars:81600.00, discount_reseller_pct:8, discount_volume_10_pct:3, discount_volume_20_pct:5, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-PECA-002": { id:8, product_code:"SKU-PECA-002", product_name:"Válvula de Segurança VS-12BAR", unit_price:145.00, currency:"USD", price_brl:870.00, price_mxn:2487.45, price_ars:139200.00, discount_reseller_pct:8, discount_volume_10_pct:3, discount_volume_20_pct:5, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-PECA-003": { id:9, product_code:"SKU-PECA-003", product_name:"Óleo Lubrificante Compressor OL-46", unit_price:38.00, currency:"USD", price_brl:228.00, price_mxn:652.14, price_ars:36480.00, discount_reseller_pct:5, discount_volume_10_pct:2, discount_volume_20_pct:4, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-PECA-004": { id:14, product_code:"SKU-PECA-004", product_name:"Kit de Manutenção KM-500", unit_price:420.00, currency:"USD", price_brl:2520.00, price_mxn:7203.00, price_ars:403200.00, discount_reseller_pct:10, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
+  
+  // Válvulas e Conexões
+  "SKU-VALV-001": { id:15, product_code:"SKU-VALV-001", product_name:"Válvula Esfera 2 Polegadas VE-02", unit_price:220.00, currency:"USD", price_brl:1320.00, price_mxn:3774.00, price_ars:211200.00, discount_reseller_pct:9, discount_volume_10_pct:4, discount_volume_20_pct:6, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-VALV-002": { id:16, product_code:"SKU-VALV-002", product_name:"Válvula Solenoide VS-24V", unit_price:380.00, currency:"USD", price_brl:2280.00, price_mxn:6516.00, price_ars:364800.00, discount_reseller_pct:10, discount_volume_10_pct:5, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-CONEX-001": { id:17, product_code:"SKU-CONEX-001", product_name:"Conexão Rápida Rosca NPT CR-01", unit_price:45.00, currency:"USD", price_brl:270.00, price_mxn:771.75, price_ars:43200.00, discount_reseller_pct:7, discount_volume_10_pct:3, discount_volume_20_pct:5, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-CONEX-002": { id:18, product_code:"SKU-CONEX-002", product_name:"Manifold de Distribuição MD-04", unit_price:560.00, currency:"USD", price_brl:3360.00, price_mxn:9604.80, price_ars:537600.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
+  
+  // Ferramentas Elétricas
+  "SKU-FERR-001": { id:19, product_code:"SKU-FERR-001", product_name:"Furadeira Industrial FI-800W", unit_price:380.00, currency:"USD", price_brl:2280.00, price_mxn:6516.00, price_ars:364800.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-FERR-002": { id:20, product_code:"SKU-FERR-002", product_name:"Esmerilhadeira Angular EA-2200W", unit_price:495.00, currency:"USD", price_brl:2970.00, price_mxn:8488.65, price_ars:475200.00, discount_reseller_pct:11, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-FERR-003": { id:21, product_code:"SKU-FERR-003", product_name:"Parafusadeira Industrial PI-1500W", unit_price:620.00, currency:"USD", price_brl:3720.00, price_mxn:10633.20, price_ars:595200.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:9, last_updated:"2026-03-01T00:00:00Z" },
+  
+  // Sistemas de Refrigeração
+  "SKU-REFR-001": { id:22, product_code:"SKU-REFR-001", product_name:"Unidade Condensadora UC-3HP", unit_price:2850.00, currency:"USD", price_brl:17100.00, price_mxn:48895.50, price_ars:2736000.00, discount_reseller_pct:14, discount_volume_10_pct:6, discount_volume_20_pct:10, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-REFR-002": { id:23, product_code:"SKU-REFR-002", product_name:"Evaporador Industrial EI-5000", unit_price:1950.00, currency:"USD", price_brl:11700.00, price_mxn:33457.50, price_ars:1872000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
+  
+  // Geradores de Energia
+  "SKU-GER-001": { id:24, product_code:"SKU-GER-001", product_name:"Gerador Diesel 25KVA GD-25", unit_price:8900.00, currency:"USD", price_brl:53400.00, price_mxn:152631.00, price_ars:8544000.00, discount_reseller_pct:16, discount_volume_10_pct:7, discount_volume_20_pct:11, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-GER-002": { id:25, product_code:"SKU-GER-002", product_name:"Gerador a Gasolina 5KVA GG-05", unit_price:1450.00, currency:"USD", price_brl:8700.00, price_mxn:24865.50, price_ars:1392000.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" }
+};
+
+const MOCK_PRODUCTS = [
+  // Compressores
+  { id:"SKU-COMP-001", name:"Compressor de Ar Industrial XR-200", category:"Compressores", brand:"TechAir", unit_price:4850, currency:"USD", stock:42, discount_reseller_pct:12 },
+  { id:"SKU-COMP-002", name:"Compressor de Parafuso Industrial SR-500", category:"Compressores", brand:"TechAir", unit_price:12400, currency:"USD", stock:18, discount_reseller_pct:15 },
+  { id:"SKU-COMP-003", name:"Secador Frigorífico SF-100", category:"Compressores", brand:"TechAir", unit_price:3100, currency:"USD", stock:28, discount_reseller_pct:12 },
+  { id:"SKU-COMP-004", name:"Compressor Portátil CP-150", category:"Compressores", brand:"AirMax", unit_price:1850, currency:"USD", stock:55, discount_reseller_pct:10 },
+  
+  // Bombas
+  { id:"SKU-BOMB-001", name:"Bomba Hidráulica BH-50", category:"Bombas", brand:"HydroForce", unit_price:2750, currency:"USD", stock:65, discount_reseller_pct:10 },
+  { id:"SKU-BOMB-002", name:"Bomba Centrífuga BC-200", category:"Bombas", brand:"FluidMax", unit_price:1890, currency:"USD", stock:94, discount_reseller_pct:10 },
+  { id:"SKU-BOMB-003", name:"Bomba Submersível BS-300", category:"Bombas", brand:"AquaPro", unit_price:3400, currency:"USD", stock:32, discount_reseller_pct:12 },
+  
+  // Motores
+  { id:"SKU-MOTOR-001", name:"Motor Elétrico Trifásico ME-300", category:"Motores", brand:"ElectroDrive", unit_price:3200, currency:"USD", stock:37, discount_reseller_pct:12 },
+  { id:"SKU-MOTOR-002", name:"Motor a Diesel Industrial MD-450", category:"Motores", brand:"PowerGen", unit_price:18500, currency:"USD", stock:9, discount_reseller_pct:18 },
+  { id:"SKU-MOTOR-003", name:"Motor Elétrico Monofásico ME-150", category:"Motores", brand:"ElectroDrive", unit_price:1650, currency:"USD", stock:68, discount_reseller_pct:10 },
+  
+  // Peças de Reposição
+  { id:"SKU-PECA-001", name:"Filtro de Ar FA-XR200", category:"Peças de Reposição", brand:"TechAir", unit_price:85, currency:"USD", stock:320, discount_reseller_pct:8 },
+  { id:"SKU-PECA-002", name:"Válvula de Segurança VS-12BAR", category:"Peças de Reposição", brand:"SafeValve", unit_price:145, currency:"USD", stock:185, discount_reseller_pct:8 },
+  { id:"SKU-PECA-003", name:"Óleo Lubrificante OL-46", category:"Peças de Reposição", brand:"LubraTech", unit_price:38, currency:"USD", stock:500, discount_reseller_pct:5 },
+  { id:"SKU-PECA-004", name:"Kit de Manutenção KM-500", category:"Peças de Reposição", brand:"MaintenancePro", unit_price:420, currency:"USD", stock:75, discount_reseller_pct:10 },
+  
+  // Válvulas e Conexões
+  { id:"SKU-VALV-001", name:"Válvula Esfera 2 Polegadas VE-02", category:"Válvulas e Conexões", brand:"ValveTech", unit_price:220, currency:"USD", stock:150, discount_reseller_pct:9 },
+  { id:"SKU-VALV-002", name:"Válvula Solenoide VS-24V", category:"Válvulas e Conexões", brand:"AutoControl", unit_price:380, currency:"USD", stock:88, discount_reseller_pct:10 },
+  { id:"SKU-CONEX-001", name:"Conexão Rápida Rosca NPT CR-01", category:"Válvulas e Conexões", brand:"FastConnect", unit_price:45, currency:"USD", stock:420, discount_reseller_pct:7 },
+  { id:"SKU-CONEX-002", name:"Manifold de Distribuição MD-04", category:"Válvulas e Conexões", brand:"FlowMaster", unit_price:560, currency:"USD", stock:62, discount_reseller_pct:12 },
+  
+  // Ferramentas Elétricas
+  { id:"SKU-FERR-001", name:"Furadeira Industrial FI-800W", category:"Ferramentas Elétricas", brand:"PowerTools", unit_price:380, currency:"USD", stock:95, discount_reseller_pct:10 },
+  { id:"SKU-FERR-002", name:"Esmerilhadeira Angular EA-2200W", category:"Ferramentas Elétricas", brand:"GrindPro", unit_price:495, currency:"USD", stock:72, discount_reseller_pct:11 },
+  { id:"SKU-FERR-003", name:"Parafusadeira Industrial PI-1500W", category:"Ferramentas Elétricas", brand:"FastDrill", unit_price:620, currency:"USD", stock:58, discount_reseller_pct:12 },
+  
+  // Sistemas de Refrigeração
+  { id:"SKU-REFR-001", name:"Unidade Condensadora UC-3HP", category:"Sistemas de Refrigeração", brand:"CoolTech", unit_price:2850, currency:"USD", stock:24, discount_reseller_pct:14 },
+  { id:"SKU-REFR-002", name:"Evaporador Industrial EI-5000", category:"Sistemas de Refrigeração", brand:"ChillMax", unit_price:1950, currency:"USD", stock:36, discount_reseller_pct:12 },
+  
+  // Geradores de Energia
+  { id:"SKU-GER-001", name:"Gerador Diesel 25KVA GD-25", category:"Geradores de Energia", brand:"PowerGen", unit_price:8900, currency:"USD", stock:15, discount_reseller_pct:16 },
+  { id:"SKU-GER-002", name:"Gerador a Gasolina 5KVA GG-05", category:"Geradores de Energia", brand:"GenPower", unit_price:1450, currency:"USD", stock:44, discount_reseller_pct:10 }
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GLOBAL STATE
+// ═══════════════════════════════════════════════════════════════════════════
+
+let currentView = 'grid';
+let currentFilter = 'Todos';
+let searchTerm = '';
+let queryHistory = JSON.parse(localStorage.getItem('queryHistory') || '[]');
+let lastResponse = null;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// THEME TOGGLE
+// ═══════════════════════════════════════════════════════════════════════════
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const currentTheme = html.getAttribute('data-theme');
+  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', newTheme);
+  document.getElementById('themeIcon').textContent = newTheme === 'light' ? '☀️' : '🌙';
+  localStorage.setItem('theme', newTheme);
+}
+
+// Load saved theme
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme) {
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.getElementById('themeIcon').textContent = savedTheme === 'light' ? '☀️' : '🌙';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER PRODUCTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function getFilteredProducts() {
+  return MOCK_PRODUCTS.filter(p => {
+    const matchesCategory = currentFilter === 'Todos' || p.category === currentFilter;
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         p.id.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+}
+
+function renderProducts() {
+  const filtered = getFilteredProducts();
+  const grid = document.getElementById('productsGrid');
+  
+  grid.innerHTML = filtered.map(p => `
+    <div class="product-card" id="card-${p.id}" onclick="selectProduct('${p.id}')">
+      <div class="card-stock"></div>
+      <div class="card-header">
+        <span class="card-sku">${p.id}</span>
+        <span class="card-category">${p.category}</span>
+      </div>
+      <div class="card-name">${p.name}</div>
+      <div class="card-brand">${p.brand}</div>
+      <div class="card-price">$${p.unit_price.toLocaleString('pt-BR')}<span>USD</span></div>
+      <div class="card-discount">🏷 ${p.discount_reseller_pct}% desconto revendedor</div>
+    </div>
+  `).join('');
+}
+
+function renderTable() {
+  const filtered = getFilteredProducts();
+  const tbody = document.getElementById('tableBody');
+  
+  tbody.innerHTML = filtered.map(p => `
+    <tr onclick="selectProduct('${p.id}')">
+      <td><span class="table-sku">${p.id}</span></td>
+      <td><strong>${p.name}</strong></td>
+      <td><span class="table-category">${p.category}</span></td>
+      <td>${p.brand}</td>
+      <td class="table-price">$${p.unit_price.toLocaleString('pt-BR')}</td>
+      <td>${p.discount_reseller_pct}%</td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FILTERS AND SEARCH
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderCategoryFilters() {
+  const categories = ['Todos', ...new Set(MOCK_PRODUCTS.map(p => p.category))];
+  const container = document.getElementById('categoryFilter');
+  
+  container.innerHTML = categories.map(cat => `
+    <button class="filter-btn ${cat === currentFilter ? 'active' : ''}" 
+            onclick="setFilter('${cat}')">${cat}</button>
+  `).join('');
+}
+
+function setFilter(category) {
+  currentFilter = category;
+  renderCategoryFilters();
+  renderProducts();
+  renderTable();
+}
+
+function filterProducts() {
+  searchTerm = document.getElementById('searchInput').value;
+  renderProducts();
+  renderTable();
+}
+
+function switchView(view) {
+  currentView = view;
+  
+  if (view === 'grid') {
+    document.getElementById('productsGrid').classList.remove('hidden');
+    document.getElementById('productsTable').classList.add('hidden');
+    document.getElementById('gridViewBtn').classList.add('active');
+    document.getElementById('tableViewBtn').classList.remove('active');
+  } else {
+    document.getElementById('productsGrid').classList.add('hidden');
+    document.getElementById('productsTable').classList.remove('hidden');
+    document.getElementById('gridViewBtn').classList.remove('active');
+    document.getElementById('tableViewBtn').classList.add('active');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHART
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderChart() {
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  const sorted = [...MOCK_PRODUCTS].sort((a, b) => b.unit_price - a.unit_price).slice(0, 10);
+  
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(p => p.id),
+      datasets: [{
+        label: 'Preço (USD)',
+        data: sorted.map(p => p.unit_price),
+        backgroundColor: 'rgba(0, 161, 224, 0.6)',
+        borderColor: 'rgba(0, 161, 224, 1)',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return '$' + value.toLocaleString();
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// API EXPLORER
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderQuickButtons() {
+  const container = document.getElementById('quickBtns');
+  const endpoints = [
+    { label: '/prices', path: '/prices' },
+    { label: '/products', path: '/products' },
+    { label: '/categories', path: '/categories' },
+    { label: '404 test', path: '/prices/SKU-INVALIDO-999' }
+  ];
+  container.innerHTML = endpoints.map(e =>
+    `<button class="quick-btn" onclick="setEndpoint('${e.path}')">${e.label}</button>`
+  ).join('') + MOCK_PRODUCTS.slice(0,5).map(p =>
+    `<button class="quick-btn" onclick="setEndpoint('/prices/${p.id}')">/prices/${p.id}</button>`
+  ).join('');
+}
+
+function setEndpoint(path) {
+  document.getElementById('urlInput').value = path;
+}
+
+function selectProduct(sku) {
+  document.querySelectorAll('.product-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('card-' + sku);
+  if (card) card.classList.add('active');
+  setEndpoint('/prices/' + sku);
+  callAPI();
+}
+
+function syntaxHighlight(json) {
+  json = JSON.stringify(json, null, 2);
+  return json
+    .replace(/("[\w_]+")\s*:/g, '<span class="json-key">$1</span>:')
+    .replace(/:\s*(".*?")/g, ': <span class="json-string">$1</span>')
+    .replace(/:\s*(\d+\.?\d*)/g, ': <span class="json-number">$1</span>')
+    .replace(/:\s*(true|false)/g, ': <span class="json-bool">$1</span>')
+    .replace(/:\s*(null)/g, ': <span class="json-null">$1</span>');
+}
+
+function callAPI() {
+  const path = document.getElementById('urlInput').value.trim();
+  const btn = document.getElementById('sendBtn');
+  const pill = document.getElementById('statusPill');
+  const body = document.getElementById('responseBody');
+  const meta = document.getElementById('responseMeta');
+
+  btn.disabled = true;
+  pill.className = 'status-pill status-waiting';
+  pill.textContent = 'Aguardando...';
+  body.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+  meta.textContent = '';
+
+  setTimeout(() => {
+    const start = Date.now();
+    let result, status;
+
+    if (path === '/prices') {
+      result = Object.values(MOCK_PRICES);
+      status = 200;
+    } else if (path === '/products') {
+      result = MOCK_PRODUCTS;
+      status = 200;
+    } else if (path === '/categories') {
+      result = [
+        { id:1, name:"Compressores", description:"Compressores de ar industriais" },
+        { id:2, name:"Bombas", description:"Bombas hidráulicas e centrífugas" },
+        { id:3, name:"Motores", description:"Motores elétricos e a combustão" },
+        { id:4, name:"Peças de Reposição", description:"Filtros, válvulas e lubrificantes" },
+        { id:5, name:"Válvulas e Conexões", description:"Válvulas e sistemas de conexão" },
+        { id:6, name:"Ferramentas Elétricas", description:"Ferramentas industriais elétricas" },
+        { id:7, name:"Sistemas de Refrigeração", description:"Equipamentos de refrigeração industrial" },
+        { id:8, name:"Geradores de Energia", description:"Geradores diesel e gasolina" }
+      ];
+      status = 200;
+    } else {
+      const match = path.match(/\/prices\/([A-Z0-9-]+)/i);
+      const pmatch = path.match(/\/products\/([A-Z0-9-]+)/i);
+      if (match) {
+        const code = match[1].toUpperCase();
+        result = MOCK_PRICES[code] || { error: 'Product not found', message: `No pricing data for: ${code}`, code: 404 };
+        status = MOCK_PRICES[code] ? 200 : 404;
+      } else if (pmatch) {
+        const p = MOCK_PRODUCTS.find(x => x.id === pmatch[1].toUpperCase());
+        result = p || { error: 'Product not found', code: 404 };
+        status = p ? 200 : 404;
+      } else {
+        result = { error: 'Endpoint not found', code: 404 };
+        status = 404;
+      }
+    }
+
+    const elapsed = Date.now() - start + Math.floor(Math.random() * 80 + 20);
+    pill.className = `status-pill status-${status === 200 ? '200' : '404'}`;
+    pill.textContent = status === 200 ? `✓ ${status} OK` : `✗ ${status} Not Found`;
+    meta.textContent = `${elapsed}ms · application/json`;
+    body.innerHTML = syntaxHighlight(result);
+    btn.disabled = false;
+    
+    lastResponse = result;
+    addToHistory(path, status);
+  }, 400 + Math.random() * 200);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════════════════════════════════════
+
+function addToHistory(path, status) {
+  const now = new Date();
+  const item = {
+    path,
+    status,
+    timestamp: now.toLocaleTimeString('pt-BR')
+  };
+  
+  queryHistory.unshift(item);
+  queryHistory = queryHistory.slice(0, 10); // Keep last 10
+  localStorage.setItem('queryHistory', JSON.stringify(queryHistory));
+  renderHistory();
+}
+
+function renderHistory() {
+  const container = document.getElementById('historyList');
+  if (queryHistory.length === 0) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:11px;">Nenhuma consulta ainda</div>';
+    return;
+  }
+  
+  container.innerHTML = queryHistory.map((item, i) => `
+    <div class="history-item" onclick="setEndpoint('${item.path}'); callAPI();">
+      <span>${item.path}</span>
+      <span class="history-time">${item.timestamp} · ${item.status}</span>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COPY & EXPORT
+// ═══════════════════════════════════════════════════════════════════════════
+
+function copyResponse() {
+  if (!lastResponse) {
+    showToast('Nenhuma resposta para copiar');
+    return;
+  }
+  
+  const json = JSON.stringify(lastResponse, null, 2);
+  navigator.clipboard.writeText(json).then(() => {
+    showToast('✓ JSON copiado!');
+  }).catch(() => {
+    showToast('Erro ao copiar');
+  });
+}
+
+function exportToCSV() {
+  const filtered = getFilteredProducts();
+  
+  let csv = 'SKU,Produto,Categoria,Marca,Preço USD,Desconto %\n';
+  filtered.forEach(p => {
+    csv += `"${p.id}","${p.name}","${p.category}","${p.brand}",${p.unit_price},${p.discount_reseller_pct}\n`;
+  });
+  
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'produtos-' + new Date().toISOString().split('T')[0] + '.csv';
+  link.click();
+  
+  showToast('✓ CSV exportado!');
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BACK TO TOP
+// ═══════════════════════════════════════════════════════════════════════════
+
+const backToTopBtn = document.getElementById('backToTop');
+
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 400) {
+    backToTopBtn.classList.add('visible');
+  } else {
+    backToTopBtn.classList.remove('visible');
+  }
+});
+
+backToTopBtn.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+renderProducts();
+renderTable();
+renderCategoryFilters();
+renderQuickButtons();
+renderHistory();
+renderChart();
+
+document.getElementById('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') callAPI();
+});
+</script>
+
+</body>
+</html
