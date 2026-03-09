@@ -1006,7 +1006,7 @@
       <div class="explorer-header">
         <span class="method-badge">GET</span>
         <span class="endpoint-display">/prices/<span class="param">{product_code}</span></span>
-        <span style="font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace;">
+        <span id="endpointLabel" style="font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace;">
           → endpoint usado pelo Agentforce
         </span>
       </div>
@@ -1033,8 +1033,8 @@ Selecione um produto acima ou clique em "Executar" para ver a resposta da API
   <div class="section">
     <div class="section-title">Configuração Salesforce</div>
     <div class="sf-box">
-      <h3>Named Credential — Flow HTTP Callout</h3>
-      <div class="sf-label">Endpoint no Flow (Get_Product_Price_From_API)</div>
+      <h3 id="sfTitle1">Named Credential — Flow HTTP Callout</h3>
+      <div class="sf-label" id="sfLabel1">Endpoint no Flow (Get_Product_Price_From_API)</div>
       <div class="sf-code">
 {!$Credential.PricingAPI_NC}/prices/{!productCode}
 Method: GET
@@ -1045,7 +1045,7 @@ Timeout:
       </div>
     </div>
     <div class="sf-box">
-      <h3>Mapeamento de campos — Flow Assignment</h3>
+      <h3 id="sfTitle2">Mapeamento de campos — Flow Assignment</h3>
       <div class="sf-code">
 productName ← {!httpResponse.body.product_name}
 unitPrice ← {!httpResponse.body.unit_price}
@@ -1056,8 +1056,8 @@ lastUpdated ← {!httpResponse.body.last_updated}
       </div>
     </div>
     <div class="sf-box">
-      <h3>Resposta do Agentforce ao parceiro</h3>
-      <div class="sf-code">
+      <h3 id="sfTitle3">Resposta do Agentforce ao parceiro</h3>
+      <div class="sf-code" id="sfExample">
 "O Compressor de Ar Industrial XR-200 (SKU-COMP-001)
 tem preço unitário de USD 4.850,00 (BRL 29.100,00).
 Como revendedor você possui 12% de desconto.
@@ -1175,6 +1175,7 @@ const MOCK_PRODUCTS = [
 
 let currentView = 'grid';
 let currentFilter = 'Todos';
+let currentFilterOriginal = 'Todos';
 let searchTerm = '';
 let queryHistory = JSON.parse(localStorage.getItem('queryHistory') || '[]');
 let lastResponse = null;
@@ -1209,7 +1210,26 @@ const translations = {
     copied: "Copiado!",
     copyError: "Erro ao copiar",
     csvExported: "CSV exportado!",
-    selectResponse: "Selecione um produto acima ou clique em \"Executar\" para ver a resposta da API"
+    selectResponse: "Selecione um produto acima ou clique em \"Executar\" para ver a resposta da API",
+    endpointLabel: "→ endpoint usado pelo Agentforce",
+    sfTitle1: "Named Credential — Flow HTTP Callout",
+    sfLabel1: "Endpoint no Flow (Get_Product_Price_From_API)",
+    sfTitle2: "Mapeamento de campos — Flow Assignment",
+    sfTitle3: "Resposta do Agentforce ao parceiro",
+    sfExample: `"O Compressor de Ar Industrial XR-200 (SKU-COMP-001)
+tem preço unitário de USD 4.850,00 (BRL 29.100,00).
+Como revendedor você possui 12% de desconto.
+Deseja que eu gere uma cotação?"`,
+    categories: {
+      "Compressores": "Compressores",
+      "Bombas": "Bombas",
+      "Motores": "Motores",
+      "Peças de Reposição": "Peças de Reposição",
+      "Válvulas e Conexões": "Válvulas e Conexões",
+      "Ferramentas Elétricas": "Ferramentas Elétricas",
+      "Sistemas de Refrigeração": "Sistemas de Refrigeração",
+      "Geradores de Energia": "Geradores de Energia"
+    }
   },
   en: {
     title: "Industrial Equipment<br>Pricing API",
@@ -1235,7 +1255,53 @@ const translations = {
     copied: "Copied!",
     copyError: "Copy error",
     csvExported: "CSV exported!",
-    selectResponse: "Select a product above or click \"Execute\" to see the API response"
+    selectResponse: "Select a product above or click \"Execute\" to see the API response",
+    endpointLabel: "→ endpoint used by Agentforce",
+    sfTitle1: "Named Credential — Flow HTTP Callout",
+    sfLabel1: "Endpoint in Flow (Get_Product_Price_From_API)",
+    sfTitle2: "Field Mapping — Flow Assignment",
+    sfTitle3: "Agentforce Response to Partner",
+    sfExample: `"The Industrial Air Compressor XR-200 (SKU-COMP-001)
+has a unit price of USD 4,850.00 (BRL 29,100.00).
+As a reseller, you have a 12% discount.
+Would you like me to generate a quote?"`,
+    categories: {
+      "Compressores": "Compressors",
+      "Bombas": "Pumps",
+      "Motores": "Motors",
+      "Peças de Reposição": "Spare Parts",
+      "Válvulas e Conexões": "Valves & Connections",
+      "Ferramentas Elétricas": "Power Tools",
+      "Sistemas de Refrigeração": "Refrigeration Systems",
+      "Geradores de Energia": "Power Generators"
+    },
+    products: {
+      "SKU-COMP-001": "Industrial Air Compressor XR-200",
+      "SKU-COMP-002": "Industrial Screw Compressor SR-500",
+      "SKU-COMP-003": "Refrigerated Air Dryer SF-100",
+      "SKU-COMP-004": "Portable Compressor CP-150",
+      "SKU-BOMB-001": "Hydraulic Pump BH-50",
+      "SKU-BOMB-002": "Centrifugal Pump BC-200",
+      "SKU-BOMB-003": "Submersible Pump BS-300",
+      "SKU-MOTOR-001": "Three-Phase Electric Motor ME-300",
+      "SKU-MOTOR-002": "Industrial Diesel Motor MD-450",
+      "SKU-MOTOR-003": "Single-Phase Electric Motor ME-150",
+      "SKU-PECA-001": "Air Filter FA-XR200",
+      "SKU-PECA-002": "Safety Valve VS-12BAR",
+      "SKU-PECA-003": "Compressor Lubricating Oil OL-46",
+      "SKU-PECA-004": "Maintenance Kit KM-500",
+      "SKU-VALV-001": "2-Inch Ball Valve VE-02",
+      "SKU-VALV-002": "Solenoid Valve VS-24V",
+      "SKU-CONEX-001": "Quick Connect NPT Thread CR-01",
+      "SKU-CONEX-002": "Distribution Manifold MD-04",
+      "SKU-FERR-001": "Industrial Drill FI-800W",
+      "SKU-FERR-002": "Angle Grinder EA-2200W",
+      "SKU-FERR-003": "Industrial Screwdriver PI-1500W",
+      "SKU-REFR-001": "Condensing Unit UC-3HP",
+      "SKU-REFR-002": "Industrial Evaporator EI-5000",
+      "SKU-GER-001": "Diesel Generator 25KVA GD-25",
+      "SKU-GER-002": "Gasoline Generator 5KVA GG-05"
+    }
   },
   es: {
     title: "Industrial Equipment<br>Pricing API",
@@ -1261,7 +1327,53 @@ const translations = {
     copied: "¡Copiado!",
     copyError: "Error al copiar",
     csvExported: "¡CSV exportado!",
-    selectResponse: "Seleccione un producto arriba o haga clic en \"Ejecutar\" para ver la respuesta de la API"
+    selectResponse: "Seleccione un producto arriba o haga clic en \"Ejecutar\" para ver la respuesta de la API",
+    endpointLabel: "→ endpoint usado por Agentforce",
+    sfTitle1: "Named Credential — Flow HTTP Callout",
+    sfLabel1: "Endpoint en Flow (Get_Product_Price_From_API)",
+    sfTitle2: "Mapeo de campos — Flow Assignment",
+    sfTitle3: "Respuesta de Agentforce al socio",
+    sfExample: `"El Compresor de Aire Industrial XR-200 (SKU-COMP-001)
+tiene un precio unitario de USD 4.850,00 (BRL 29.100,00).
+Como distribuidor, tiene un 12% de descuento.
+¿Desea que genere una cotización?"`,
+    categories: {
+      "Compressores": "Compresores",
+      "Bombas": "Bombas",
+      "Motores": "Motores",
+      "Peças de Reposição": "Repuestos",
+      "Válvulas e Conexões": "Válvulas y Conexiones",
+      "Ferramentas Elétricas": "Herramientas Eléctricas",
+      "Sistemas de Refrigeração": "Sistemas de Refrigeración",
+      "Geradores de Energia": "Generadores de Energía"
+    },
+    products: {
+      "SKU-COMP-001": "Compresor de Aire Industrial XR-200",
+      "SKU-COMP-002": "Compresor de Tornillo Industrial SR-500",
+      "SKU-COMP-003": "Secador Frigorífico de Aire SF-100",
+      "SKU-COMP-004": "Compresor Portátil CP-150",
+      "SKU-BOMB-001": "Bomba Hidráulica BH-50",
+      "SKU-BOMB-002": "Bomba Centrífuga BC-200",
+      "SKU-BOMB-003": "Bomba Sumergible BS-300",
+      "SKU-MOTOR-001": "Motor Eléctrico Trifásico ME-300",
+      "SKU-MOTOR-002": "Motor Diésel Industrial MD-450",
+      "SKU-MOTOR-003": "Motor Eléctrico Monofásico ME-150",
+      "SKU-PECA-001": "Filtro de Aire FA-XR200",
+      "SKU-PECA-002": "Válvula de Seguridad VS-12BAR",
+      "SKU-PECA-003": "Aceite Lubricante Compresor OL-46",
+      "SKU-PECA-004": "Kit de Mantenimiento KM-500",
+      "SKU-VALV-001": "Válvula de Bola 2 Pulgadas VE-02",
+      "SKU-VALV-002": "Válvula Solenoide VS-24V",
+      "SKU-CONEX-001": "Conexión Rápida Rosca NPT CR-01",
+      "SKU-CONEX-002": "Manifold de Distribución MD-04",
+      "SKU-FERR-001": "Taladro Industrial FI-800W",
+      "SKU-FERR-002": "Amoladora Angular EA-2200W",
+      "SKU-FERR-003": "Atornillador Industrial PI-1500W",
+      "SKU-REFR-001": "Unidad Condensadora UC-3HP",
+      "SKU-REFR-002": "Evaporador Industrial EI-5000",
+      "SKU-GER-001": "Generador Diésel 25KVA GD-25",
+      "SKU-GER-002": "Generador a Gasolina 5KVA GG-05"
+    }
   }
 };
 
@@ -1288,10 +1400,10 @@ function changeLanguage(lang) {
   
   // Update section titles
   const sections = document.querySelectorAll('.section-title');
-  sections[0].innerHTML = t.catalogTitle + '<span style="flex:1;height:1px;background:var(--border);margin-left:12px;"></span>';
-  sections[1].innerHTML = t.priceComparison + '<span style="flex:1;height:1px;background:var(--border);margin-left:12px;"></span>';
-  sections[2].innerHTML = t.apiExplorer + '<span style="flex:1;height:1px;background:var(--border);margin-left:12px;"></span>';
-  sections[3].innerHTML = t.salesforceConfig + '<span style="flex:1;height:1px;background:var(--border);margin-left:12px;"></span>';
+  if (sections[0]) sections[0].innerHTML = t.catalogTitle + '<span style="flex:1;height:1px;background:var(--border);margin-left:12px;"></span>';
+  if (sections[1]) sections[1].innerHTML = t.priceComparison + '<span style="flex:1;height:1px;background:var(--border);margin-left:12px;"></span>';
+  if (sections[2]) sections[2].innerHTML = t.apiExplorer + '<span style="flex:1;height:1px;background:var(--border);margin-left:12px;"></span>';
+  if (sections[3]) sections[3].innerHTML = t.salesforceConfig + '<span style="flex:1;height:1px;background:var(--border);margin-left:12px;"></span>';
   
   document.getElementById('searchInput').placeholder = t.searchPlaceholder;
   document.querySelector('.btn-export').innerHTML = '📥 ' + t.exportCSV;
@@ -1301,11 +1413,35 @@ function changeLanguage(lang) {
   document.querySelector('.btn-copy').innerHTML = '📋 ' + t.copyJSON;
   document.querySelector('footer .container').textContent = t.footer;
   
-  // Update filter buttons
-  currentFilter = t.allCategories;
-  renderCategoryFilters();
+  // Update endpoint label
+  const endpointLabel = document.getElementById('endpointLabel');
+  if (endpointLabel) endpointLabel.textContent = t.endpointLabel;
   
-  // Update products
+  // Update Salesforce section
+  const sfTitle1 = document.getElementById('sfTitle1');
+  const sfLabel1 = document.getElementById('sfLabel1');
+  const sfTitle2 = document.getElementById('sfTitle2');
+  const sfTitle3 = document.getElementById('sfTitle3');
+  const sfExample = document.getElementById('sfExample');
+  
+  if (sfTitle1) sfTitle1.textContent = t.sfTitle1;
+  if (sfLabel1) sfLabel1.textContent = t.sfLabel1;
+  if (sfTitle2) sfTitle2.textContent = t.sfTitle2;
+  if (sfTitle3) sfTitle3.textContent = t.sfTitle3;
+  if (sfExample) sfExample.textContent = t.sfExample;
+  
+  // Update response body placeholder
+  const responseBody = document.getElementById('responseBody');
+  if (responseBody && responseBody.textContent.trim().length < 200) {
+    responseBody.textContent = t.selectResponse;
+  }
+  
+  // Reset filter to "All" in new language
+  currentFilter = t.allCategories;
+  currentFilterOriginal = t.allCategories;
+  
+  // Update everything
+  renderCategoryFilters();
   renderProducts();
   renderTable();
 }
@@ -1347,7 +1483,7 @@ function getFilteredProducts() {
   const allLabel = t.allCategories;
   
   return MOCK_PRODUCTS.filter(p => {
-    const matchesCategory = currentFilter === allLabel || p.category === currentFilter;
+    const matchesCategory = currentFilter === allLabel || p.category === currentFilterOriginal;
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          p.id.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
@@ -1359,35 +1495,46 @@ function renderProducts() {
   const grid = document.getElementById('productsGrid');
   const t = translations[currentLang];
   
-  grid.innerHTML = filtered.map(p => `
+  grid.innerHTML = filtered.map(p => {
+    const translatedName = t.products && t.products[p.id] ? t.products[p.id] : p.name;
+    const translatedCategory = t.categories && t.categories[p.category] ? t.categories[p.category] : p.category;
+    
+    return `
     <div class="product-card" id="card-${p.id}" onclick="selectProduct('${p.id}')">
       <div class="card-stock"></div>
       <div class="card-header">
         <span class="card-sku">${p.id}</span>
-        <span class="card-category">${p.category}</span>
+        <span class="card-category">${translatedCategory}</span>
       </div>
-      <div class="card-name">${p.name}</div>
+      <div class="card-name">${translatedName}</div>
       <div class="card-brand">${p.brand}</div>
       <div class="card-price">$${p.unit_price.toLocaleString('pt-BR')}<span>USD</span></div>
       <div class="card-discount">🏷 ${p.discount_reseller_pct}% ${t.discount}</div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function renderTable() {
   const filtered = getFilteredProducts();
   const tbody = document.getElementById('tableBody');
+  const t = translations[currentLang];
   
-  tbody.innerHTML = filtered.map(p => `
+  tbody.innerHTML = filtered.map(p => {
+    const translatedName = t.products && t.products[p.id] ? t.products[p.id] : p.name;
+    const translatedCategory = t.categories && t.categories[p.category] ? t.categories[p.category] : p.category;
+    
+    return `
     <tr onclick="selectProduct('${p.id}')">
       <td><span class="table-sku">${p.id}</span></td>
-      <td><strong>${p.name}</strong></td>
-      <td><span class="table-category">${p.category}</span></td>
+      <td><strong>${translatedName}</strong></td>
+      <td><span class="table-category">${translatedCategory}</span></td>
       <td>${p.brand}</td>
       <td class="table-price">$${p.unit_price.toLocaleString('pt-BR')}</td>
       <td>${p.discount_reseller_pct}%</td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1397,17 +1544,23 @@ function renderTable() {
 function renderCategoryFilters() {
   const t = translations[currentLang];
   const allLabel = t.allCategories;
-  const categories = [allLabel, ...new Set(MOCK_PRODUCTS.map(p => p.category))];
+  const uniqueCategories = [...new Set(MOCK_PRODUCTS.map(p => p.category))];
+  const translatedCategories = uniqueCategories.map(cat => 
+    t.categories && t.categories[cat] ? t.categories[cat] : cat
+  );
+  const categories = [allLabel, ...translatedCategories];
+  const originalCategories = [allLabel, ...uniqueCategories];
   const container = document.getElementById('categoryFilter');
   
-  container.innerHTML = categories.map(cat => `
+  container.innerHTML = categories.map((cat, index) => `
     <button class="filter-btn ${cat === currentFilter ? 'active' : ''}" 
-            onclick="setFilter('${cat}')">${cat}</button>
+            onclick="setFilter('${cat}', '${originalCategories[index]}')">${cat}</button>
   `).join('');
 }
 
-function setFilter(category) {
-  currentFilter = category;
+function setFilter(translatedCategory, originalCategory) {
+  currentFilter = translatedCategory;
+  currentFilterOriginal = originalCategory || translatedCategory;
   renderCategoryFilters();
   renderProducts();
   renderTable();
@@ -1710,4 +1863,4 @@ document.getElementById('urlInput').addEventListener('keydown', e => {
 </script>
 
 </body>
-</html
+</html>
