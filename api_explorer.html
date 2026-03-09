@@ -6,7 +6,6 @@
   <title>Industrial Equipment Pricing API — Explorer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-
   <style>
     :root {
       --bg: #080c14;
@@ -246,6 +245,37 @@
       transform: scale(0.95);
     }
 
+    .lang-selector {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .lang-btn {
+      padding: 4px 10px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'Syne', sans-serif;
+    }
+
+    .lang-btn:hover {
+      color: var(--accent);
+    }
+
+    .lang-btn.active {
+      background: var(--accent);
+      color: white;
+    }
+
     .section { padding: 40px 0; }
 
     .section-title {
@@ -424,7 +454,11 @@
     .card-brand  { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
     .card-price  { font-family: 'JetBrains Mono',monospace; font-size: 21px; font-weight: 700; color: var(--success); }
     .card-price span { font-size: 13px; color: var(--muted); margin-left: 6px; }
-    .card-discount { font-size: 11px; color: var(--warn); margin-top: 6px; }
+    .card-discount {
+      font-size: 11px;
+      color: #059669;
+      margin-top: 6px;
+    }
 
     .card-stock {
       position: absolute;
@@ -546,8 +580,7 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
       font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 4px 10px;      border-radius: 6px;
       background: rgba(0,200,150,0.15);
       color: var(--success);
       border: 1px solid rgba(0,200,150,0.3);
@@ -600,9 +633,9 @@
     }
 
     .btn-send:hover, .btn-copy:hover, .btn-export:hover { 
-      transform: translateY(-1px); 
-      box-shadow: 0 4px 16px rgba(0,161,224,0.3); 
-    }
+       transform: translateY(-1px); 
+       box-shadow: 0 4px 16px rgba(0,161,224,0.3); 
+     }
 
     .btn-copy, .btn-export {
       background: linear-gradient(135deg, var(--accent2), #5b21b6);
@@ -884,6 +917,11 @@
       </div>
     </div>
     <div class="header-actions">
+      <div class="lang-selector">
+        <button class="lang-btn active" data-lang="pt" onclick="changeLanguage('pt')">PT</button>
+        <button class="lang-btn" data-lang="en" onclick="changeLanguage('en')">EN</button>
+        <button class="lang-btn" data-lang="es" onclick="changeLanguage('es')">ES</button>
+      </div>
       <div class="badge">● MOCK LIVE</div>
       <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
         <span id="themeIcon">🌙</span>
@@ -893,27 +931,26 @@
 </header>
 
 <main class="container">
-
   <div class="hero">
     <div class="hero-eyebrow">Agentforce PoC · Panel Interview</div>
-    <h1>Industrial Equipment<br>Pricing API</h1>
-    <p>API mockada com dados de equipamentos industriais para integração com Agentforce via Flow HTTP Callout utilizando Named Credential.</p>
+    <h1 id="heroTitle">Industrial Equipment<br>Pricing API</h1>
+    <p id="heroSubtitle">API mockada com dados de equipamentos industriais para integração com Agentforce via Flow HTTP Callout utilizando Named Credential.</p>
 
     <div class="base-url-box">
-      <span>BASE URL</span>
+      <span id="baseUrlLabel">BASE URL</span>
       <strong id="baseUrl">https://industrial-equipment-pricing-mock-production.up.railway.app</strong>
-      <button class="copy-btn" onclick="copyToClipboard('baseUrl')">📋 Copiar</button>
+      <button class="copy-btn" id="btnCopyBase" onclick="copyToClipboard('baseUrl')">📋 Copiar</button>
     </div>
 
     <div class="token-box">
-      <span>Bearer Token:</span>
+      <span id="tokenLabel">Bearer Token:</span>
       <span class="token-value" id="bearerToken">mock-token-latam-2026</span>
-      <button class="copy-btn" onclick="copyToClipboard('bearerToken')">📋 Copiar</button>
+      <button class="copy-btn" id="btnCopyToken" onclick="copyToClipboard('bearerToken')">📋 Copiar</button>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title">Catálogo de Produtos — 25 equipamentos disponíveis</div>
+    <div class="section-title" id="secTitleCatalog">Catálogo de Produtos — 25 equipamentos disponíveis</div>
     
     <div class="catalog-controls">
       <div class="search-box">
@@ -924,7 +961,7 @@
         <button class="view-btn active" id="gridViewBtn" onclick="switchView('grid')" title="Visualização em grade">⊞</button>
         <button class="view-btn" id="tableViewBtn" onclick="switchView('table')" title="Visualização em tabela">≡</button>
       </div>
-      <button class="btn-export" onclick="exportToCSV()">📥 Exportar CSV</button>
+      <button class="btn-export" id="btnExport" onclick="exportToCSV()">📥 Exportar CSV</button>
     </div>
 
     <div class="products-grid" id="productsGrid"></div>
@@ -933,12 +970,12 @@
       <table>
         <thead>
           <tr>
-            <th>SKU</th>
-            <th>Produto</th>
-            <th>Categoria</th>
-            <th>Marca</th>
-            <th>Preço (USD)</th>
-            <th>Desconto</th>
+            <th id="thSku">SKU</th>
+            <th id="thProduct">Produto</th>
+            <th id="thCategory">Categoria</th>
+            <th id="thBrand">Marca</th>
+            <th id="thPrice">Preço (USD)</th>
+            <th id="thDiscount">Desconto</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -947,18 +984,18 @@
   </div>
 
   <div class="section">
-    <div class="section-title">Comparação de Preços</div>
+    <div class="section-title" id="secTitleChart">Comparação de Preços</div>
     <div class="chart-container">
-      <div class="chart-title">Top 10 Produtos por Preço (USD)</div>
+      <div class="chart-title" id="chartTitleText">Top 10 Produtos por Preço (USD)</div>
       <canvas id="priceChart"></canvas>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title">API Explorer — Teste os endpoints</div>
+    <div class="section-title" id="secTitleExplorer">API Explorer — Teste os endpoints</div>
     
     <div class="history-panel" id="historyPanel">
-      <div class="history-title">📋 Histórico de Consultas</div>
+      <div class="history-title" id="historyTitleText">📋 Histórico de Consultas</div>
       <div id="historyList"></div>
     </div>
 
@@ -966,7 +1003,7 @@
       <div class="explorer-header">
         <span class="method-badge">GET</span>
         <span class="endpoint-display">/prices/<span class="param">{product_code}</span></span>
-        <span style="font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace;">
+        <span style="font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace;" id="agentforceHint">
           → endpoint usado pelo Agentforce
         </span>
       </div>
@@ -980,10 +1017,9 @@
           <div class="response-header">
             <span class="status-pill status-waiting" id="statusPill">Aguardando...</span>
             <span class="response-meta" id="responseMeta"></span>
-            <button class="btn-copy" onclick="copyResponse()">📋 Copiar JSON</button>
+            <button class="btn-copy" id="btnCopyJSON" onclick="copyResponse()">📋 Copiar JSON</button>
           </div>
-          <div class="response-body" id="responseBody">
-Selecione um produto acima ou clique em "Executar" para ver a resposta da API
+          <div class="response-body" id="responseBody">Selecione um produto acima ou clique em "Executar" para ver a resposta da API
           </div>
         </div>
       </div>
@@ -991,23 +1027,19 @@ Selecione um produto acima ou clique em "Executar" para ver a resposta da API
   </div>
 
   <div class="section">
-    <div class="section-title">Configuração Salesforce</div>
+    <div class="section-title" id="secTitleSF">Configuração Salesforce</div>
     <div class="sf-box">
-      <h3>Named Credential — Flow HTTP Callout</h3>
-      <div class="sf-label">Endpoint no Flow (Get_Product_Price_From_API)</div>
-      <div class="sf-code">
-{!$Credential.PricingAPI_NC}/prices/{!productCode}
+      <h3 id="sfBoxTitle1">Named Credential — Flow HTTP Callout</h3>
+      <div class="sf-label" id="sfBoxLabel1">Endpoint no Flow (Get_Product_Price_From_API)</div>
+      <div class="sf-code">{!$Credential.PricingAPI_NC}/prices/{!productCode}
 Method: GET
-Header:
-  Authorization → Bearer mock-token-latam-2026
-Timeout:
-  10000ms (10s)
+Header:  Authorization → Bearer mock-token-latam-2026
+Timeout:  10000ms (10s)
       </div>
     </div>
     <div class="sf-box">
-      <h3>Mapeamento de campos — Flow Assignment</h3>
-      <div class="sf-code">
-productName ← {!httpResponse.body.product_name}
+      <h3 id="sfBoxTitle2">Mapeamento de campos — Flow Assignment</h3>
+      <div class="sf-code">productName ← {!httpResponse.body.product_name}
 unitPrice ← {!httpResponse.body.unit_price}
 currencyCode ← {!httpResponse.body.currency}
 priceBRL ← {!httpResponse.body.price_brl}
@@ -1016,21 +1048,16 @@ lastUpdated ← {!httpResponse.body.last_updated}
       </div>
     </div>
     <div class="sf-box">
-      <h3>Resposta do Agentforce ao parceiro</h3>
-      <div class="sf-code">
-"O Compressor de Ar Industrial XR-200 (SKU-COMP-001)
-tem preço unitário de USD 4.850,00 (BRL 29.100,00).
-Como revendedor você possui 12% de desconto.
-Deseja que eu gere uma cotação?"
+      <h3 id="sfBoxTitle3">Resposta do Agentforce ao parceiro</h3>
+      <div class="sf-code" id="sfBoxCode3">"O Compressor de Ar Industrial XR-200 (SKU-COMP-001) tem preço unitário de USD 4.850,00 (BRL 29.100,00). Como revendedor você possui 12% de desconto. Deseja que eu gere uma cotação?"
       </div>
     </div>
   </div>
-
 </main>
 
 <footer>
-  <div class="container">
-    Industrial Equipment Pricing API · Developed by Juliana Haddad
+  <div class="container" id="footerText">
+    Industrial Equipment Pricing API · Desenvolvido por Juliana Haddad
   </div>
 </footer>
 
@@ -1040,91 +1067,61 @@ Deseja que eu gere uma cotação?"
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
-// MOCK DATA - 25 PRODUTOS COM NOVAS CATEGORIAS
+// MOCK DATA - 25 PRODUTOS
 // ═══════════════════════════════════════════════════════════════════════════
 
 const MOCK_PRICES = {
-  // Compressores
   "SKU-COMP-001": { id:1, product_code:"SKU-COMP-001", product_name:"Compressor de Ar Industrial XR-200", unit_price:4850.00, currency:"USD", price_brl:29100.00, price_mxn:83220.00, price_ars:4656000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-COMP-002": { id:2, product_code:"SKU-COMP-002", product_name:"Compressor de Parafuso Industrial SR-500", unit_price:12400.00, currency:"USD", price_brl:74400.00, price_mxn:212880.00, price_ars:11904000.00, discount_reseller_pct:15, discount_volume_10_pct:6, discount_volume_20_pct:10, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-COMP-003": { id:10, product_code:"SKU-COMP-003", product_name:"Secador Frigorífico de Ar SF-100", unit_price:3100.00, currency:"USD", price_brl:18600.00, price_mxn:53187.00, price_ars:2976000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-COMP-004": { id:11, product_code:"SKU-COMP-004", product_name:"Compressor Portátil CP-150", unit_price:1850.00, currency:"USD", price_brl:11100.00, price_mxn:31725.00, price_ars:1776000.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Bombas
   "SKU-BOMB-001": { id:3, product_code:"SKU-BOMB-001", product_name:"Bomba Hidráulica BH-50", unit_price:2750.00, currency:"USD", price_brl:16500.00, price_mxn:47190.00, price_ars:2640000.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-BOMB-002": { id:4, product_code:"SKU-BOMB-002", product_name:"Bomba Centrífuga BC-200", unit_price:1890.00, currency:"USD", price_brl:11340.00, price_mxn:32427.00, price_ars:1814400.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-BOMB-003": { id:12, product_code:"SKU-BOMB-003", product_name:"Bomba Submersível BS-300", unit_price:3400.00, currency:"USD", price_brl:20400.00, price_mxn:58308.00, price_ars:3264000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Motores
   "SKU-MOTOR-001": { id:5, product_code:"SKU-MOTOR-001", product_name:"Motor Elétrico Trifásico ME-300", unit_price:3200.00, currency:"USD", price_brl:19200.00, price_mxn:54912.00, price_ars:3072000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-MOTOR-002": { id:6, product_code:"SKU-MOTOR-002", product_name:"Motor a Diesel Industrial MD-450", unit_price:18500.00, currency:"USD", price_brl:111000.00, price_mxn:317370.00, price_ars:17760000.00, discount_reseller_pct:18, discount_volume_10_pct:7, discount_volume_20_pct:12, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-MOTOR-003": { id:13, product_code:"SKU-MOTOR-003", product_name:"Motor Elétrico Monofásico ME-150", unit_price:1650.00, currency:"USD", price_brl:9900.00, price_mxn:28305.00, price_ars:1584000.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Peças de Reposição
   "SKU-PECA-001": { id:7, product_code:"SKU-PECA-001", product_name:"Filtro de Ar FA-XR200", unit_price:85.00, currency:"USD", price_brl:510.00, price_mxn:1458.15, price_ars:81600.00, discount_reseller_pct:8, discount_volume_10_pct:3, discount_volume_20_pct:5, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-PECA-002": { id:8, product_code:"SKU-PECA-002", product_name:"Válvula de Segurança VS-12BAR", unit_price:145.00, currency:"USD", price_brl:870.00, price_mxn:2487.45, price_ars:139200.00, discount_reseller_pct:8, discount_volume_10_pct:3, discount_volume_20_pct:5, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-PECA-003": { id:9, product_code:"SKU-PECA-003", product_name:"Óleo Lubrificante Compressor OL-46", unit_price:38.00, currency:"USD", price_brl:228.00, price_mxn:652.14, price_ars:36480.00, discount_reseller_pct:5, discount_volume_10_pct:2, discount_volume_20_pct:4, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-PECA-004": { id:14, product_code:"SKU-PECA-004", product_name:"Kit de Manutenção KM-500", unit_price:420.00, currency:"USD", price_brl:2520.00, price_mxn:7203.00, price_ars:403200.00, discount_reseller_pct:10, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Válvulas e Conexões
   "SKU-VALV-001": { id:15, product_code:"SKU-VALV-001", product_name:"Válvula Esfera 2 Polegadas VE-02", unit_price:220.00, currency:"USD", price_brl:1320.00, price_mxn:3774.00, price_ars:211200.00, discount_reseller_pct:9, discount_volume_10_pct:4, discount_volume_20_pct:6, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-VALV-002": { id:16, product_code:"SKU-VALV-002", product_name:"Válvula Solenoide VS-24V", unit_price:380.00, currency:"USD", price_brl:2280.00, price_mxn:6516.00, price_ars:364800.00, discount_reseller_pct:10, discount_volume_10_pct:5, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-CONEX-001": { id:17, product_code:"SKU-CONEX-001", product_name:"Conexão Rápida Rosca NPT CR-01", unit_price:45.00, currency:"USD", price_brl:270.00, price_mxn:771.75, price_ars:43200.00, discount_reseller_pct:7, discount_volume_10_pct:3, discount_volume_20_pct:5, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-CONEX-002": { id:18, product_code:"SKU-CONEX-002", product_name:"Manifold de Distribuição MD-04", unit_price:560.00, currency:"USD", price_brl:3360.00, price_mxn:9604.80, price_ars:537600.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Ferramentas Elétricas
   "SKU-FERR-001": { id:19, product_code:"SKU-FERR-001", product_name:"Furadeira Industrial FI-800W", unit_price:380.00, currency:"USD", price_brl:2280.00, price_mxn:6516.00, price_ars:364800.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-FERR-002": { id:20, product_code:"SKU-FERR-002", product_name:"Esmerilhadeira Angular EA-2200W", unit_price:495.00, currency:"USD", price_brl:2970.00, price_mxn:8488.65, price_ars:475200.00, discount_reseller_pct:11, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-FERR-003": { id:21, product_code:"SKU-FERR-003", product_name:"Parafusadeira Industrial PI-1500W", unit_price:620.00, currency:"USD", price_brl:3720.00, price_mxn:10633.20, price_ars:595200.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:9, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Sistemas de Refrigeração
   "SKU-REFR-001": { id:22, product_code:"SKU-REFR-001", product_name:"Unidade Condensadora UC-3HP", unit_price:2850.00, currency:"USD", price_brl:17100.00, price_mxn:48895.50, price_ars:2736000.00, discount_reseller_pct:14, discount_volume_10_pct:6, discount_volume_20_pct:10, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-REFR-002": { id:23, product_code:"SKU-REFR-002", product_name:"Evaporador Industrial EI-5000", unit_price:1950.00, currency:"USD", price_brl:11700.00, price_mxn:33457.50, price_ars:1872000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Geradores de Energia
   "SKU-GER-001": { id:24, product_code:"SKU-GER-001", product_name:"Gerador Diesel 25KVA GD-25", unit_price:8900.00, currency:"USD", price_brl:53400.00, price_mxn:152631.00, price_ars:8544000.00, discount_reseller_pct:16, discount_volume_10_pct:7, discount_volume_20_pct:11, last_updated:"2026-03-01T00:00:00Z" },
   "SKU-GER-002": { id:25, product_code:"SKU-GER-002", product_name:"Gerador a Gasolina 5KVA GG-05", unit_price:1450.00, currency:"USD", price_brl:8700.00, price_mxn:24865.50, price_ars:1392000.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" }
 };
 
 const MOCK_PRODUCTS = [
-  // Compressores
   { id:"SKU-COMP-001", name:"Compressor de Ar Industrial XR-200", category:"Compressores", brand:"TechAir", unit_price:4850, currency:"USD", stock:42, discount_reseller_pct:12 },
   { id:"SKU-COMP-002", name:"Compressor de Parafuso Industrial SR-500", category:"Compressores", brand:"TechAir", unit_price:12400, currency:"USD", stock:18, discount_reseller_pct:15 },
   { id:"SKU-COMP-003", name:"Secador Frigorífico SF-100", category:"Compressores", brand:"TechAir", unit_price:3100, currency:"USD", stock:28, discount_reseller_pct:12 },
   { id:"SKU-COMP-004", name:"Compressor Portátil CP-150", category:"Compressores", brand:"AirMax", unit_price:1850, currency:"USD", stock:55, discount_reseller_pct:10 },
-  
-  // Bombas
   { id:"SKU-BOMB-001", name:"Bomba Hidráulica BH-50", category:"Bombas", brand:"HydroForce", unit_price:2750, currency:"USD", stock:65, discount_reseller_pct:10 },
   { id:"SKU-BOMB-002", name:"Bomba Centrífuga BC-200", category:"Bombas", brand:"FluidMax", unit_price:1890, currency:"USD", stock:94, discount_reseller_pct:10 },
   { id:"SKU-BOMB-003", name:"Bomba Submersível BS-300", category:"Bombas", brand:"AquaPro", unit_price:3400, currency:"USD", stock:32, discount_reseller_pct:12 },
-  
-  // Motores
   { id:"SKU-MOTOR-001", name:"Motor Elétrico Trifásico ME-300", category:"Motores", brand:"ElectroDrive", unit_price:3200, currency:"USD", stock:37, discount_reseller_pct:12 },
   { id:"SKU-MOTOR-002", name:"Motor a Diesel Industrial MD-450", category:"Motores", brand:"PowerGen", unit_price:18500, currency:"USD", stock:9, discount_reseller_pct:18 },
   { id:"SKU-MOTOR-003", name:"Motor Elétrico Monofásico ME-150", category:"Motores", brand:"ElectroDrive", unit_price:1650, currency:"USD", stock:68, discount_reseller_pct:10 },
-  
-  // Peças de Reposição
   { id:"SKU-PECA-001", name:"Filtro de Ar FA-XR200", category:"Peças de Reposição", brand:"TechAir", unit_price:85, currency:"USD", stock:320, discount_reseller_pct:8 },
   { id:"SKU-PECA-002", name:"Válvula de Segurança VS-12BAR", category:"Peças de Reposição", brand:"SafeValve", unit_price:145, currency:"USD", stock:185, discount_reseller_pct:8 },
   { id:"SKU-PECA-003", name:"Óleo Lubrificante OL-46", category:"Peças de Reposição", brand:"LubraTech", unit_price:38, currency:"USD", stock:500, discount_reseller_pct:5 },
   { id:"SKU-PECA-004", name:"Kit de Manutenção KM-500", category:"Peças de Reposição", brand:"MaintenancePro", unit_price:420, currency:"USD", stock:75, discount_reseller_pct:10 },
-  
-  // Válvulas e Conexões
   { id:"SKU-VALV-001", name:"Válvula Esfera 2 Polegadas VE-02", category:"Válvulas e Conexões", brand:"ValveTech", unit_price:220, currency:"USD", stock:150, discount_reseller_pct:9 },
   { id:"SKU-VALV-002", name:"Válvula Solenoide VS-24V", category:"Válvulas e Conexões", brand:"AutoControl", unit_price:380, currency:"USD", stock:88, discount_reseller_pct:10 },
   { id:"SKU-CONEX-001", name:"Conexão Rápida Rosca NPT CR-01", category:"Válvulas e Conexões", brand:"FastConnect", unit_price:45, currency:"USD", stock:420, discount_reseller_pct:7 },
   { id:"SKU-CONEX-002", name:"Manifold de Distribuição MD-04", category:"Válvulas e Conexões", brand:"FlowMaster", unit_price:560, currency:"USD", stock:62, discount_reseller_pct:12 },
-  
-  // Ferramentas Elétricas
   { id:"SKU-FERR-001", name:"Furadeira Industrial FI-800W", category:"Ferramentas Elétricas", brand:"PowerTools", unit_price:380, currency:"USD", stock:95, discount_reseller_pct:10 },
   { id:"SKU-FERR-002", name:"Esmerilhadeira Angular EA-2200W", category:"Ferramentas Elétricas", brand:"GrindPro", unit_price:495, currency:"USD", stock:72, discount_reseller_pct:11 },
   { id:"SKU-FERR-003", name:"Parafusadeira Industrial PI-1500W", category:"Ferramentas Elétricas", brand:"FastDrill", unit_price:620, currency:"USD", stock:58, discount_reseller_pct:12 },
-  
-  // Sistemas de Refrigeração
   { id:"SKU-REFR-001", name:"Unidade Condensadora UC-3HP", category:"Sistemas de Refrigeração", brand:"CoolTech", unit_price:2850, currency:"USD", stock:24, discount_reseller_pct:14 },
   { id:"SKU-REFR-002", name:"Evaporador Industrial EI-5000", category:"Sistemas de Refrigeração", brand:"ChillMax", unit_price:1950, currency:"USD", stock:36, discount_reseller_pct:12 },
-  
-  // Geradores de Energia
   { id:"SKU-GER-001", name:"Gerador Diesel 25KVA GD-25", category:"Geradores de Energia", brand:"PowerGen", unit_price:8900, currency:"USD", stock:15, discount_reseller_pct:16 },
   { id:"SKU-GER-002", name:"Gerador a Gasolina 5KVA GG-05", category:"Geradores de Energia", brand:"GenPower", unit_price:1450, currency:"USD", stock:44, discount_reseller_pct:10 }
 ];
@@ -1138,6 +1135,176 @@ let currentFilter = 'Todos';
 let searchTerm = '';
 let queryHistory = JSON.parse(localStorage.getItem('queryHistory') || '[]');
 let lastResponse = null;
+let currentLang = localStorage.getItem('language') || 'pt';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TRANSLATIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+const translations = {
+  pt: {
+    title: "Industrial Equipment<br>Pricing API",
+    subtitle: "API mockada com dados de equipamentos industriais para integração com Agentforce via Flow HTTP Callout utilizando Named Credential.",
+    baseUrl: "BASE URL",
+    bearerToken: "Bearer Token:",
+    copy: "Copiar",
+    catalogTitle: "Catálogo de Produtos — 25 equipamentos disponíveis",
+    searchPlaceholder: "Buscar produtos...",
+    allCategories: "Todos",
+    exportCSV: "Exportar CSV",
+    chartTitle: "Top 10 Produtos por Preço (USD)",
+    apiExplorer: "API Explorer — Teste os endpoints",
+    historyTitle: "Histórico de Consultas",
+    noHistory: "Nenhuma consulta ainda",
+    waiting: "Aguardando...",
+    execute: "Executar",
+    copyJSON: "Copiar JSON",
+    salesforceConfig: "Configuração Salesforce",
+    footer: "Industrial Equipment Pricing API · Desenvolvido por Juliana Haddad",
+    priceComparison: "Comparação de Preços",
+    discount: "desconto revendedor",
+    copied: "Copiado!",
+    copyError: "Erro ao copiar",
+    csvExported: "CSV exportado!",
+    selectResponse: "Selecione um produto acima ou clique em \"Executar\" para ver a resposta da API",
+    agentforceHint: "→ endpoint usado pelo Agentforce",
+    thSku: "SKU", thProduct: "Produto", thCategory: "Categoria", thBrand: "Marca", thPrice: "Preço (USD)", thDiscount: "Desconto",
+    sfBox1: "Named Credential — Flow HTTP Callout",
+    sfLabel1: "Endpoint no Flow (Get_Product_Price_From_API)",
+    sfBox2: "Mapeamento de campos — Flow Assignment",
+    sfBox3: "Resposta do Agentforce ao parceiro",
+    sfCode3: "\"O Compressor de Ar Industrial XR-200 (SKU-COMP-001) tem preço unitário de USD 4.850,00 (BRL 29.100,00). Como revendedor você possui 12% de desconto. Deseja que eu gere uma cotação?\"",
+    catMap: { "Compressores": "Compressores", "Bombas": "Bombas", "Motores": "Motores", "Peças de Reposição": "Peças de Reposição", "Válvulas e Conexões": "Válvulas e Conexões", "Ferramentas Elétricas": "Ferramentas Elétricas", "Sistemas de Refrigeração": "Sistemas de Refrigeração", "Geradores de Energia": "Geradores de Energia" }
+  },
+  en: {
+    title: "Industrial Equipment<br>Pricing API",
+    subtitle: "Mock API with industrial equipment data for integration with Agentforce via Flow HTTP Callout using Named Credential.",
+    baseUrl: "BASE URL",
+    bearerToken: "Bearer Token:",
+    copy: "Copy",
+    catalogTitle: "Product Catalog — 25 available items",
+    searchPlaceholder: "Search products...",
+    allCategories: "All",
+    exportCSV: "Export CSV",
+    chartTitle: "Top 10 Products by Price (USD)",
+    apiExplorer: "API Explorer — Test endpoints",
+    historyTitle: "Query History",
+    noHistory: "No queries yet",
+    waiting: "Waiting...",
+    execute: "Execute",
+    copyJSON: "Copy JSON",
+    salesforceConfig: "Salesforce Configuration",
+    footer: "Industrial Equipment Pricing API · Developed by Juliana Haddad",
+    priceComparison: "Price Comparison",
+    discount: "reseller discount",
+    copied: "Copied!",
+    copyError: "Copy error",
+    csvExported: "CSV exported!",
+    selectResponse: "Select a product above or click \"Execute\" to see the API response",
+    agentforceHint: "→ endpoint used by Agentforce",
+    thSku: "SKU", thProduct: "Product", thCategory: "Category", thBrand: "Brand", thPrice: "Price (USD)", thDiscount: "Discount",
+    sfBox1: "Named Credential — Flow HTTP Callout",
+    sfLabel1: "Flow Endpoint (Get_Product_Price_From_API)",
+    sfBox2: "Field Mapping — Flow Assignment",
+    sfBox3: "Agentforce Response to Partner",
+    sfCode3: "\"The XR-200 Industrial Air Compressor (SKU-COMP-001) has a unit price of USD 4,850.00. As a reseller, you have a 12% discount. Would you like me to generate a quote?\"",
+    catMap: { "Compressores": "Compressors", "Bombas": "Pumps", "Motores": "Motors", "Peças de Reposição": "Spare Parts", "Válvulas e Conexões": "Valves & Fittings", "Ferramentas Elétricas": "Power Tools", "Sistemas de Refrigeração": "Cooling Systems", "Geradores de Energia": "Power Generators" }
+  },
+  es: {
+    title: "Industrial Equipment<br>Pricing API",
+    subtitle: "API simulada con datos de equipos industriales para integración con Agentforce vía Flow HTTP Callout usando Named Credential.",
+    baseUrl: "URL BASE",
+    bearerToken: "Bearer Token:",
+    copy: "Copiar",
+    catalogTitle: "Catálogo de Productos — 25 equipos disponibles",
+    searchPlaceholder: "Buscar productos...",
+    allCategories: "Todos",
+    exportCSV: "Exportar CSV",
+    chartTitle: "Top 10 Productos por Precio (USD)",
+    apiExplorer: "API Explorer — Probar endpoints",
+    historyTitle: "Historial de Consultas",
+    noHistory: "Sin consultas aún",
+    waiting: "Esperando...",
+    execute: "Ejecutar",
+    copyJSON: "Copiar JSON",
+    salesforceConfig: "Configuración Salesforce",
+    footer: "Industrial Equipment Pricing API · Desarrollado por Juliana Haddad",
+    priceComparison: "Comparación de Precios",
+    discount: "descuento distribuidor",
+    copied: "¡Copiado!",
+    copyError: "Error al copiar",
+    csvExported: "¡CSV exportado!",
+    selectResponse: "Seleccione un producto arriba o haga clic en \"Ejecutar\" para ver la respuesta de la API",
+    agentforceHint: "→ endpoint usado por Agentforce",
+    thSku: "SKU", thProduct: "Producto", thCategory: "Categoría", thBrand: "Marca", thPrice: "Precio (USD)", thDiscount: "Descuento",
+    sfBox1: "Named Credential — Flow HTTP Callout",
+    sfLabel1: "Endpoint en Flow (Get_Product_Price_From_API)",
+    sfBox2: "Mapeo de campos — Flow Assignment",
+    sfBox3: "Respuesta de Agentforce al socio",
+    sfCode3: "\"El Compresor de Aire Industrial XR-200 (SKU-COMP-001) tiene un precio unitario de USD 4.850,00. Como distribuidor, tienes un 12% de descuento. ¿Deseas que genere una cotización?\"",
+    catMap: { "Compressores": "Compresores", "Bombas": "Bombas", "Motores": "Motores", "Peças de Reposição": "Repuestos", "Válvulas e Conexões": "Válvulas y Conexiones", "Ferramentas Elétricas": "Herramientas Eléctricas", "Sistemas de Refrigeração": "Sistemas de Refrigeración", "Geradores de Energia": "Generadores de Energía" }
+  }
+};
+
+function changeLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('language', lang);
+  
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+
+  const t = translations[lang];
+  
+  // Hero & Base elements
+  document.getElementById('heroTitle').innerHTML = t.title;
+  document.getElementById('heroSubtitle').textContent = t.subtitle;
+  document.getElementById('baseUrlLabel').textContent = t.baseUrl;
+  document.getElementById('tokenLabel').textContent = t.bearerToken;
+  document.getElementById('btnCopyBase').textContent = '📋 ' + t.copy;
+  document.getElementById('btnCopyToken').textContent = '📋 ' + t.copy;
+
+  // Sections
+  document.getElementById('secTitleCatalog').textContent = t.catalogTitle;
+  document.getElementById('secTitleChart').textContent = t.priceComparison;
+  document.getElementById('secTitleExplorer').textContent = t.apiExplorer;
+  document.getElementById('secTitleSF').textContent = t.salesforceConfig;
+
+  // Search & Buttons
+  document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+  document.getElementById('btnExport').textContent = '📥 ' + t.exportCSV;
+  document.getElementById('chartTitleText').textContent = t.chartTitle;
+  document.getElementById('historyTitleText').textContent = '📋 ' + t.historyTitle;
+  document.getElementById('agentforceHint').textContent = t.agentforceHint;
+  document.getElementById('sendBtn').textContent = '▶ ' + t.execute;
+  document.getElementById('btnCopyJSON').textContent = '📋 ' + t.copyJSON;
+  document.getElementById('statusPill').textContent = t.waiting;
+  document.getElementById('responseBody').textContent = t.selectResponse;
+
+  // Table Headers
+  document.getElementById('thSku').textContent = t.thSku;
+  document.getElementById('thProduct').textContent = t.thProduct;
+  document.getElementById('thCategory').textContent = t.thCategory;
+  document.getElementById('thBrand').textContent = t.thBrand;
+  document.getElementById('thPrice').textContent = t.thPrice;
+  document.getElementById('thDiscount').textContent = t.thDiscount;
+
+  // Salesforce Config
+  document.getElementById('sfBoxTitle1').textContent = t.sfBox1;
+  document.getElementById('sfBoxLabel1').textContent = t.sfLabel1;
+  document.getElementById('sfBoxTitle2').textContent = t.sfBox2;
+  document.getElementById('sfBoxTitle3').textContent = t.sfBox3;
+  document.getElementById('sfBoxCode3').textContent = t.sfCode3;
+
+  document.getElementById('footerText').textContent = t.footer;
+
+  // Refresh dynamic parts
+  currentFilter = t.allCategories; 
+  renderCategoryFilters();
+  renderProducts();
+  renderTable();
+  renderHistory();
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // THEME TOGGLE
@@ -1150,9 +1317,13 @@ function toggleTheme() {
   html.setAttribute('data-theme', newTheme);
   document.getElementById('themeIcon').textContent = newTheme === 'light' ? '☀️' : '🌙';
   localStorage.setItem('theme', newTheme);
+  
+  const chartCanvas = document.getElementById('priceChart');
+  const oldChart = Chart.getChart(chartCanvas);
+  if (oldChart) oldChart.destroy();
+  renderChart();
 }
 
-// Load saved theme
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme) {
   document.documentElement.setAttribute('data-theme', savedTheme);
@@ -1164,10 +1335,14 @@ if (savedTheme) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function getFilteredProducts() {
+  const t = translations[currentLang];
+  const allLabel = t.allCategories;
+
   return MOCK_PRODUCTS.filter(p => {
-    const matchesCategory = currentFilter === 'Todos' || p.category === currentFilter;
+    const translatedCat = t.catMap[p.category] || p.category;
+    const matchesCategory = currentFilter === allLabel || translatedCat === currentFilter;
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         p.id.toLowerCase().includes(searchTerm.toLowerCase());
+                          p.id.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 }
@@ -1175,18 +1350,19 @@ function getFilteredProducts() {
 function renderProducts() {
   const filtered = getFilteredProducts();
   const grid = document.getElementById('productsGrid');
-  
+  const t = translations[currentLang];
+
   grid.innerHTML = filtered.map(p => `
     <div class="product-card" id="card-${p.id}" onclick="selectProduct('${p.id}')">
       <div class="card-stock"></div>
       <div class="card-header">
         <span class="card-sku">${p.id}</span>
-        <span class="card-category">${p.category}</span>
+        <span class="card-category">${t.catMap[p.category] || p.category}</span>
       </div>
       <div class="card-name">${p.name}</div>
       <div class="card-brand">${p.brand}</div>
       <div class="card-price">$${p.unit_price.toLocaleString('pt-BR')}<span>USD</span></div>
-      <div class="card-discount">🏷 ${p.discount_reseller_pct}% desconto revendedor</div>
+      <div class="card-discount">🏷 ${p.discount_reseller_pct}% ${t.discount}</div>
     </div>
   `).join('');
 }
@@ -1194,12 +1370,13 @@ function renderProducts() {
 function renderTable() {
   const filtered = getFilteredProducts();
   const tbody = document.getElementById('tableBody');
-  
+  const t = translations[currentLang];
+
   tbody.innerHTML = filtered.map(p => `
     <tr onclick="selectProduct('${p.id}')">
       <td><span class="table-sku">${p.id}</span></td>
       <td><strong>${p.name}</strong></td>
-      <td><span class="table-category">${p.category}</span></td>
+      <td><span class="table-category">${t.catMap[p.category] || p.category}</span></td>
       <td>${p.brand}</td>
       <td class="table-price">$${p.unit_price.toLocaleString('pt-BR')}</td>
       <td>${p.discount_reseller_pct}%</td>
@@ -1212,9 +1389,13 @@ function renderTable() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function renderCategoryFilters() {
-  const categories = ['Todos', ...new Set(MOCK_PRODUCTS.map(p => p.category))];
-  const container = document.getElementById('categoryFilter');
+  const t = translations[currentLang];
+  const allLabel = t.allCategories;
   
+  // Extract categories and translate them for the buttons
+  const categories = [allLabel, ...new Set(MOCK_PRODUCTS.map(p => t.catMap[p.category] || p.category))];
+  const container = document.getElementById('categoryFilter');
+
   container.innerHTML = categories.map(cat => `
     <button class="filter-btn ${cat === currentFilter ? 'active' : ''}" 
             onclick="setFilter('${cat}')">${cat}</button>
@@ -1236,7 +1417,6 @@ function filterProducts() {
 
 function switchView(view) {
   currentView = view;
-  
   if (view === 'grid') {
     document.getElementById('productsGrid').classList.remove('hidden');
     document.getElementById('productsTable').classList.add('hidden');
@@ -1257,33 +1437,28 @@ function switchView(view) {
 function renderChart() {
   const ctx = document.getElementById('priceChart').getContext('2d');
   const sorted = [...MOCK_PRODUCTS].sort((a, b) => b.unit_price - a.unit_price).slice(0, 10);
-  
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+
   new Chart(ctx, {
     type: 'bar',
     data: {
       labels: sorted.map(p => p.id),
       datasets: [{
-        label: 'Preço (USD)',
+        label: 'Price (USD)',
         data: sorted.map(p => p.unit_price),
-        backgroundColor: 'rgba(10, 37, 64, 0.7)',
-        borderColor: 'rgba(10, 37, 64, 1)',
+        backgroundColor: isDark ? 'rgba(14, 165, 233, 0.7)' : 'rgba(10, 37, 64, 1)',
+        borderColor: isDark ? 'rgba(14, 165, 233, 1)' : 'rgba(10, 37, 64, 1)',
         borderWidth: 2
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: true,
-      plugins: {
-        legend: { display: false }
-      },
+      plugins: { legend: { display: false } },
       scales: {
         y: {
           beginAtZero: true,
-          ticks: {
-            callback: function(value) {
-              return '$' + value.toLocaleString();
-            }
-          }
+          ticks: { callback: (val) => '$' + val.toLocaleString() }
         }
       }
     }
@@ -1302,9 +1477,9 @@ function renderQuickButtons() {
     { label: '/categories', path: '/categories' },
     { label: '404 test', path: '/prices/SKU-INVALIDO-999' }
   ];
-  container.innerHTML = endpoints.map(e =>
+  container.innerHTML = endpoints.map(e => 
     `<button class="quick-btn" onclick="setEndpoint('${e.path}')">${e.label}</button>`
-  ).join('') + MOCK_PRODUCTS.slice(0,5).map(p =>
+  ).join('') + MOCK_PRODUCTS.slice(0,5).map(p => 
     `<button class="quick-btn" onclick="setEndpoint('/prices/${p.id}')">/prices/${p.id}</button>`
   ).join('');
 }
@@ -1337,10 +1512,11 @@ function callAPI() {
   const pill = document.getElementById('statusPill');
   const body = document.getElementById('responseBody');
   const meta = document.getElementById('responseMeta');
+  const t = translations[currentLang];
 
   btn.disabled = true;
   pill.className = 'status-pill status-waiting';
-  pill.textContent = 'Aguardando...';
+  pill.textContent = t.waiting;
   body.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
   meta.textContent = '';
 
@@ -1389,7 +1565,6 @@ function callAPI() {
     meta.textContent = `${elapsed}ms · application/json`;
     body.innerHTML = syntaxHighlight(result);
     btn.disabled = false;
-    
     lastResponse = result;
     addToHistory(path, status);
   }, 400 + Math.random() * 200);
@@ -1401,26 +1576,21 @@ function callAPI() {
 
 function addToHistory(path, status) {
   const now = new Date();
-  const item = {
-    path,
-    status,
-    timestamp: now.toLocaleTimeString('pt-BR')
-  };
-  
+  const item = { path, status, timestamp: now.toLocaleTimeString('pt-BR') };
   queryHistory.unshift(item);
-  queryHistory = queryHistory.slice(0, 10); // Keep last 10
+  queryHistory = queryHistory.slice(0, 10);
   localStorage.setItem('queryHistory', JSON.stringify(queryHistory));
   renderHistory();
 }
 
 function renderHistory() {
   const container = document.getElementById('historyList');
+  const t = translations[currentLang];
   if (queryHistory.length === 0) {
-    container.innerHTML = '<div style="color:var(--muted);font-size:11px;">Nenhuma consulta ainda</div>';
+    container.innerHTML = `<div style="color:var(--muted);font-size:11px;">${t.noHistory}</div>`;
     return;
   }
-  
-  container.innerHTML = queryHistory.map((item, i) => `
+  container.innerHTML = queryHistory.map((item) => `
     <div class="history-item" onclick="setEndpoint('${item.path}'); callAPI();">
       <span>${item.path}</span>
       <span class="history-time">${item.timestamp} · ${item.status}</span>
@@ -1433,34 +1603,32 @@ function renderHistory() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function copyResponse() {
+  const t = translations[currentLang];
   if (!lastResponse) {
-    showToast('Nenhuma resposta para copiar');
+    showToast(t.noHistory);
     return;
   }
-  
   const json = JSON.stringify(lastResponse, null, 2);
   navigator.clipboard.writeText(json).then(() => {
-    showToast('✓ JSON copiado!');
+    showToast('✓ ' + t.copied);
   }).catch(() => {
-    showToast('Erro ao copiar');
+    showToast(t.copyError);
   });
 }
 
 function exportToCSV() {
+  const t = translations[currentLang];
   const filtered = getFilteredProducts();
-  
-  let csv = 'SKU,Produto,Categoria,Marca,Preço USD,Desconto %\n';
+  let csv = 'SKU,Product,Category,Brand,Price USD,Discount %\n';
   filtered.forEach(p => {
-    csv += `"${p.id}","${p.name}","${p.category}","${p.brand}",${p.unit_price},${p.discount_reseller_pct}\n`;
+    csv += `"${p.id}","${p.name}","${t.catMap[p.category] || p.category}","${p.brand}",${p.unit_price},${p.discount_reseller_pct}\n`;
   });
-  
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = 'produtos-' + new Date().toISOString().split('T')[0] + '.csv';
+  link.download = 'products-' + new Date().toISOString().split('T')[0] + '.csv';
   link.click();
-  
-  showToast('✓ CSV exportado!');
+  showToast('✓ ' + t.csvExported);
 }
 
 function showToast(message) {
@@ -1471,13 +1639,12 @@ function showToast(message) {
 }
 
 function copyToClipboard(elementId) {
+  const t = translations[currentLang];
   const element = document.getElementById(elementId);
-  const text = element.textContent;
-  
-  navigator.clipboard.writeText(text).then(() => {
-    showToast('✓ Copiado!');
+  navigator.clipboard.writeText(element.textContent).then(() => {
+    showToast('✓ ' + t.copied);
   }).catch(() => {
-    showToast('Erro ao copiar');
+    showToast(t.copyError);
   });
 }
 
@@ -1486,15 +1653,10 @@ function copyToClipboard(elementId) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 const backToTopBtn = document.getElementById('backToTop');
-
 window.addEventListener('scroll', () => {
-  if (window.scrollY > 400) {
-    backToTopBtn.classList.add('visible');
-  } else {
-    backToTopBtn.classList.remove('visible');
-  }
+  if (window.scrollY > 400) backToTopBtn.classList.add('visible');
+  else backToTopBtn.classList.remove('visible');
 });
-
 backToTopBtn.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
@@ -1510,10 +1672,13 @@ renderQuickButtons();
 renderHistory();
 renderChart();
 
+if (currentLang !== 'pt') {
+  changeLanguage(currentLang);
+}
+
 document.getElementById('urlInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') callAPI();
 });
 </script>
-
 </body>
-</html
+</html>
