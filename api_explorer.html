@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
@@ -736,10 +735,12 @@ discountVol20Pct     ← {!httpResponse.body.discount_volume_20_pct}
 lastUpdated          ← {!httpResponse.body.last_updated}
 — campos de impostos regionais —
 taxRegime            ← {!httpResponse.body.tax_regime}
+taxTotalPct          ← {!httpResponse.body.tax_total_pct}
 priceBaseLocal       ← {!httpResponse.body.price_base_local}
+unitPriceWithTaxes   ← {!httpResponse.body.unit_price_with_taxes}
 priceWithTaxes       ← {!httpResponse.body.price_with_taxes}
 priceAfterDiscount   ← {!httpResponse.body.price_after_discount}
-taxTotalPct          ← {!httpResponse.body.tax_breakdown.total_pct}</div>
+taxBreakdown         ← {!httpResponse.body.tax_breakdown}</div>
     </div>
 
     <div class="sf-box">
@@ -1096,13 +1097,15 @@ function buildPriceResult(code) {
   const isES = currentLang === 'es' || currentLang === 'mx'
   if (isES) result.product_name = product.nameES
 
-  result.tax_regime           = r.name
-  result.tax_currency         = r.currency
-  result.fx_rate_usd          = r.fxRate
-  result.price_base_local     = parseFloat(baseLocal.toFixed(2))
-  result.price_with_taxes     = parseFloat(withTaxes.toFixed(2))
-  result.price_after_discount = parseFloat((withTaxes * (1 - orig.discount_reseller_pct / 100)).toFixed(2))
-  result.tax_breakdown        = breakdown
+  result.tax_regime               = r.name
+  result.tax_currency             = r.currency
+  result.fx_rate_usd              = r.fxRate
+  result.tax_total_pct            = parseFloat(totalPct.toFixed(2))
+  result.price_base_local         = parseFloat(baseLocal.toFixed(2))
+  result.unit_price_with_taxes    = parseFloat(withTaxes.toFixed(2))
+  result.price_with_taxes         = parseFloat(withTaxes.toFixed(2))
+  result.price_after_discount     = parseFloat((withTaxes * (1 - orig.discount_reseller_pct / 100)).toFixed(2))
+  result.tax_breakdown            = breakdown
 
   return result
 }
