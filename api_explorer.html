@@ -1111,7 +1111,10 @@ function buildPriceResult(code) {
 }
 
 // ─── API Call ─────────────────────────────────────────────────────────────
-function callAPI() {
+const BASE_URL   = 'https://industrial-equipment-pricing-mock-production.up.railway.app'
+const BEARER_TOKEN = 'mock-token-latam-2026'
+
+async function callAPI() {
   const path = document.getElementById('urlInput').value.trim()
   const btn  = document.getElementById('sendBtn')
   const pill = document.getElementById('statusPill')
@@ -1122,80 +1125,148 @@ function callAPI() {
 
   btn.disabled     = true
   pill.className   = 'status-pill status-waiting'
-  pill.textContent = 'Aguardando...'
+  pill.textContent = 'Conectando...'
   body.innerHTML   = '<div class="loading-dots"><span></span><span></span><span></span></div>'
   meta.textContent = ''
 
-  setTimeout(() => {
-    const t0 = Date.now()
-    let result, status
+  const t0 = Date.now()
 
-    if (path === '/prices') {
-      result = Object.keys(MOCK_PRICES).map(k => buildPriceResult(k))
-      status = 200
-
-    } else if (path === '/products') {
-      result = MOCK_PRODUCTS.map(p => ({
-        id: p.id,
-        name: isES ? p.nameES : p.name,
-        category: isES ? translateCategory(p.category) : p.category,
-        brand: p.brand,
-        unit_price: p.unit_price,
-        currency: 'USD',
-        stock: p.stock,
-        discount_reseller_pct: p.discount_reseller_pct
-      }))
-      status = 200
-
-    } else if (path === '/categories') {
-      result = isES ? [
-        { id:1, name:"Compresores",         description:"Compresores de aire industriales" },
-        { id:2, name:"Bombas",              description:"Bombas hidráulicas y centrífugas" },
-        { id:3, name:"Motores",             description:"Motores eléctricos y de combustión" },
-        { id:4, name:"Generadores",         description:"Generadores industriales y silenciosos" },
-        { id:5, name:"Tratamiento de Aire", description:"Secadores, purificadores y reguladores" },
-        { id:6, name:"Repuestos",           description:"Filtros, válvulas, correas y lubricantes" }
-      ] : [
-        { id:1, name:"Compressores",        description:"Compressores de ar industriais" },
-        { id:2, name:"Bombas",              description:"Bombas hidráulicas e centrífugas" },
-        { id:3, name:"Motores",             description:"Motores elétricos e a combustão" },
-        { id:4, name:"Geradores",           description:"Geradores industriais e silenciosos" },
-        { id:5, name:"Tratamento de Ar",    description:"Secadores, purificadores e reguladores" },
-        { id:6, name:"Peças de Reposição",  description:"Filtros, válvulas, correias e lubrificantes" }
-      ]
-      status = 200
-
-    } else {
-      const match  = path.match(/\/prices\/([A-Z0-9-]+)/i)
-      const pmatch = path.match(/\/products\/([A-Z0-9-]+)/i)
-
-      if (match) {
-        const code = match[1].toUpperCase()
-        const res  = buildPriceResult(code)
-        result = res || { error: 'Product not found', message: `No pricing data for: ${code}`, code: 404 }
-        status = res ? 200 : 404
-
-      } else if (pmatch) {
-        const p = MOCK_PRODUCTS.find(x => x.id === pmatch[1].toUpperCase())
-        result  = p
-          ? { id: p.id, name: isES ? p.nameES : p.name, brand: p.brand,
-              unit_price: p.unit_price, currency: 'USD', stock: p.stock }
-          : { error: 'Product not found', code: 404 }
-        status = p ? 200 : 404
-
-      } else {
-        result = { error: 'Endpoint not found', code: 404 }
-        status = 404
+  try {
+    const resp = await fetch(BASE_URL + path, {
+      headers: {
+        'Authorization': `Bearer ${BEARER_TOKEN}`,
+        'Accept': 'application/json',
+        'Accept-Language': currentLang === 'pt' ? 'pt-BR' : currentLang === 'es' ? 'es-AR' : 'es-MX'
       }
+    })
+
+    let rawData
+    try { rawData = await resp.json() } catch { rawData = { error: 'Invalid JSON response', code: resp.status } }
+
+    // Enrich response with regional tax fields (applied on top of what the API returns)
+    let result = rawData
+    const status = resp.status
+
+    // If it's a single product price response, enrich with tax fields
+    if (status === 200 && rawData && rawData.product_code) {
+      result = enrichWithTaxes(rawData)
+    } else if (status === 200 && Array.isArray(rawData) && rawData[0]?.product_code) {
+      result = rawData.map(item => enrichWithTaxes(item))
     }
 
-    const elapsed = Date.now() - t0 + Math.floor(Math.random() * 80 + 20)
-    pill.className   = `status-pill status-${status === 200 ? '200' : '404'}`
-    pill.textContent = status === 200 ? `✓ ${status} OK` : `✗ ${status} Not Found`
-    meta.textContent = `${elapsed}ms · application/json · ${r.currency} · ${r.name}`
+    const elapsed = Date.now() - t0
+    pill.className   = `status-pill status-${status === 200 ? '200' : status === 404 ? '404' : '404'}`
+    pill.textContent = status === 200 ? `✓ ${status} OK` : `✗ ${status} ${status === 401 ? 'Unauthorized' : 'Not Found'}`
+    meta.textContent = `${elapsed}ms · ${BASE_URL} · ${r.currency} · ${r.name}`
     body.innerHTML   = syntaxHighlight(result)
-    btn.disabled = false
-  }, 400 + Math.random() * 200)
+
+  } catch (err) {
+    // Network error or CORS — fall back to local mock
+    console.warn('API unreachable, using local mock:', err.message)
+    callAPIMock(path, isES, r, t0)
+    return
+  }
+
+  btn.disabled = false
+}
+
+// Enrich a raw API product with regional tax fields
+function enrichWithTaxes(raw) {
+  const product = MOCK_PRODUCTS.find(p => p.id === raw.product_code)
+  if (!product) return raw
+  const r = TAX_REGIMES[currentLang]
+  const { baseLocal, withTaxes, taxes, totalPct } = calcTax(raw.unit_price, product.category, currentLang)
+
+  const breakdown = {}
+  Object.entries(taxes).forEach(([n, pct]) => {
+    const key = n.toLowerCase().replace(/[\s\/]+/g, '_')
+    breakdown[key + '_pct']    = pct
+    breakdown[key + '_amount'] = parseFloat((baseLocal * pct / 100).toFixed(2))
+  })
+  breakdown['total_pct']    = parseFloat(totalPct.toFixed(2))
+  breakdown['total_amount'] = parseFloat((withTaxes - baseLocal).toFixed(2))
+
+  const isES = currentLang === 'es' || currentLang === 'mx'
+  if (isES) raw.product_name = product.nameES
+
+  return Object.assign({}, raw, {
+    tax_regime:            r.name,
+    tax_currency:          r.currency,
+    fx_rate_usd:           r.fxRate,
+    tax_total_pct:         parseFloat(totalPct.toFixed(2)),
+    price_base_local:      parseFloat(baseLocal.toFixed(2)),
+    unit_price_with_taxes: parseFloat(withTaxes.toFixed(2)),
+    price_with_taxes:      parseFloat(withTaxes.toFixed(2)),
+    price_after_discount:  parseFloat((withTaxes * (1 - raw.discount_reseller_pct / 100)).toFixed(2)),
+    tax_breakdown:         breakdown
+  })
+}
+
+// Local mock fallback (used when Railway is unreachable / CORS)
+function callAPIMock(path, isES, r, t0) {
+  const btn  = document.getElementById('sendBtn')
+  const pill = document.getElementById('statusPill')
+  const body = document.getElementById('responseBody')
+  const meta = document.getElementById('responseMeta')
+
+  let result, status
+
+  if (path === '/prices') {
+    result = Object.keys(MOCK_PRICES).map(k => buildPriceResult(k))
+    status = 200
+  } else if (path === '/products') {
+    result = MOCK_PRODUCTS.map(p => ({
+      id: p.id,
+      name: isES ? p.nameES : p.name,
+      category: isES ? translateCategory(p.category) : p.category,
+      brand: p.brand, unit_price: p.unit_price, currency: 'USD',
+      stock: p.stock, discount_reseller_pct: p.discount_reseller_pct
+    }))
+    status = 200
+  } else if (path === '/categories') {
+    result = isES ? [
+      { id:1, name:"Compresores",         description:"Compresores de aire industriales" },
+      { id:2, name:"Bombas",              description:"Bombas hidráulicas y centrífugas" },
+      { id:3, name:"Motores",             description:"Motores eléctricos y de combustión" },
+      { id:4, name:"Generadores",         description:"Generadores industriales y silenciosos" },
+      { id:5, name:"Tratamiento de Aire", description:"Secadores, purificadores y reguladores" },
+      { id:6, name:"Repuestos",           description:"Filtros, válvulas, correas y lubricantes" }
+    ] : [
+      { id:1, name:"Compressores",        description:"Compressores de ar industriais" },
+      { id:2, name:"Bombas",              description:"Bombas hidráulicas e centrífugas" },
+      { id:3, name:"Motores",             description:"Motores elétricos e a combustão" },
+      { id:4, name:"Geradores",           description:"Geradores industriais e silenciosos" },
+      { id:5, name:"Tratamento de Ar",    description:"Secadores, purificadores e reguladores" },
+      { id:6, name:"Peças de Reposição",  description:"Filtros, válvulas, correias e lubrificantes" }
+    ]
+    status = 200
+  } else {
+    const match  = path.match(/\/prices\/([A-Z0-9-]+)/i)
+    const pmatch = path.match(/\/products\/([A-Z0-9-]+)/i)
+    if (match) {
+      const code = match[1].toUpperCase()
+      const res  = buildPriceResult(code)
+      result = res || { error: 'Product not found', message: `No pricing data for: ${code}`, code: 404 }
+      status = res ? 200 : 404
+    } else if (pmatch) {
+      const p = MOCK_PRODUCTS.find(x => x.id === pmatch[1].toUpperCase())
+      result  = p
+        ? { id: p.id, name: isES ? p.nameES : p.name, brand: p.brand,
+            unit_price: p.unit_price, currency: 'USD', stock: p.stock }
+        : { error: 'Product not found', code: 404 }
+      status = p ? 200 : 404
+    } else {
+      result = { error: 'Endpoint not found', code: 404 }
+      status = 404
+    }
+  }
+
+  const elapsed = Date.now() - t0 + Math.floor(Math.random() * 60 + 20)
+  pill.className   = `status-pill status-${status === 200 ? '200' : '404'}`
+  pill.textContent = status === 200 ? `✓ ${status} OK (mock)` : `✗ ${status} Not Found`
+  meta.textContent = `${elapsed}ms · local mock · ${r.currency} · ${r.name}`
+  body.innerHTML   = syntaxHighlight(result)
+  btn.disabled = false
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────
