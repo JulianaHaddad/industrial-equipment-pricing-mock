@@ -1,911 +1,611 @@
+
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Industrial Equipment Pricing API — Explorer</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-
-  <style>
-    :root {
-      --bg: #080c14;
-      --surface: #0d1520;
-      --surface2: #111c2e;
-      --border: #1e2f47;
-      --accent: #00a1e0;
-      --accent2: #6b2fd9;
-      --success: #00c896;
-      --warn: #f59e0b;
-      --error: #ef4444;
-      --text: #e2e8f0;
-      --muted: #64748b;
-      --tag-bg: #0f2340;
-    }
-
-    [data-theme="light"] {
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --surface2: #f1f5f9;
-      --border: #e2e8f0;
-      --accent: #0284c7;
-      --accent2: #7c3aed;
-      --success: #059669;
-      --warn: #059669;
-      --error: #dc2626;
-      --text: #0a2540;
-      --muted: #334155;
-      --tag-bg: #e0f2fe;
-      --sf-code-text: #0a2540;
-    }
-
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Syne', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      transition: background 0.3s ease, color 0.3s ease;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0,161,224,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,161,224,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 1;
-      transition: opacity 0.3s;
-    }
-
-    [data-theme="light"] body::before {
-      opacity: 0.3;
-    }
-
-    .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px; }
-
-    header {
-      border-bottom: 1px solid var(--border);
-      padding: 20px 0;
-      background: var(--surface);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(12px);
-      transition: all 0.3s;
-    }
-
-    .header-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo-icon {
-      width: 44px; height: 44px;
-      background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #6366f1 100%);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-      transition: transform 0.2s;
-    }
-
-    .logo-icon:hover {
-      transform: scale(1.05);
-    }
-
-    .logo-text { font-size: 15px; font-weight: 700; }
-    .logo-sub  { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-weight: 600;
-      background: rgba(0,200,150,0.12);
-      color: var(--success);
-      border: 1px solid rgba(0,200,150,0.25);
-      animation: pulse-badge 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse-badge {
-      0%, 100% { opacity: 1; }
-      50%      { opacity: 0.7; }
-    }
-
-    .theme-toggle {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .theme-toggle:hover {
-      border-color: var(--accent);
-      transform: scale(1.05);
-    }
-
-    .hero {
-      padding: 56px 0 40px;
-      text-align: center;
-    }
-
-    .hero-eyebrow {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: var(--accent);
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-    }
-
-    .hero h1 {
-      font-size: clamp(28px, 5vw, 48px);
-      font-weight: 800;
-      line-height: 1.1;
-      margin-bottom: 16px;
-      background: linear-gradient(135deg, var(--text) 40%, var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero p {
-      color: var(--muted);
-      font-size: 16px;
-      max-width: 540px;
-      margin: 0 auto 32px;
-      line-height: 1.6;
-    }
-
-    .base-url-box {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 20px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      color: var(--accent);
-      margin: 16px auto;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .base-url-box strong {
-      word-break: break-all;
-    }
-
-    .token-box {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 16px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .token-value {
-      background: rgba(107,47,217,0.15);
-      border: 1px solid rgba(107,47,217,0.3);
-      color: #a78bfa;
-      padding: 4px 12px;
-      border-radius: 6px;
-    }
-
-    .copy-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'JetBrains Mono', monospace;
-      margin-left: 8px;
-    }
-
-    .copy-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: rgba(0,161,224,0.06);
-    }
-
-    .copy-btn:active {
-      transform: scale(0.95);
-    }
-
-    .lang-selector {
-      display: flex;
-      gap: 4px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 4px;
-    }
-
-    .lang-btn {
-      padding: 4px 10px;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      border-radius: 4px;
-      transition: all 0.2s;
-      font-size: 11px;
-      font-weight: 600;
-      font-family: 'Syne', sans-serif;
-    }
-
-    .lang-btn:hover {
-      color: var(--accent);
-    }
-
-    .lang-btn.active {
-      background: var(--accent);
-      color: white;
-    }
-
-    .section { padding: 40px 0; }
-
-    .section-title {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    /* Search and Filter */
-    .catalog-controls {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-    }
-
-    .search-box {
-      flex: 1;
-      min-width: 250px;
-      position: relative;
-    }
-
-    .search-box input {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 16px 10px 40px;
-      color: var(--text);
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .search-box input:focus { border-color: var(--accent); }
-
-    .search-box::before {
-      content: '🔍';
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 16px;
-    }
-
-    .category-filter {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .filter-btn {
-      font-size: 11px;
-      padding: 8px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
-    }
-
-    .filter-btn:hover,
-    .filter-btn.active {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: rgba(0,161,224,0.06);
-    }
-
-    .view-toggle {
-      display: flex;
-      gap: 4px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 4px;
-    }
-
-    .view-btn {
-      padding: 6px 12px;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      border-radius: 4px;
-      transition: all 0.2s;
-      font-size: 16px;
-    }
-
-    .view-btn.active {
-      background: var(--accent);
-      color: white;
-    }
-
-    /* Grid View */
-    .products-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
-      margin-bottom: 48px;
-    }
-
-    .products-grid.hidden { display: none; }
-
-    .product-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px;
-      cursor: pointer;
-      transition: all 0.22s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .product-card:hover,
-    .product-card.active {
-      border-color: var(--accent);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 32px rgba(0,161,224,0.12);
-    }
-
-    .product-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      opacity: 0;
-      transition: opacity 0.25s;
-    }
-
-    .product-card:hover::before,
-    .product-card.active::before { opacity: 1; }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 10px;
-    }
-
-    .card-sku, .card-category {
-      font-size: 10px;
-      padding: 3px 9px;
-      border-radius: 4px;
-    }
-
-    .card-sku {
-      color: var(--accent);
-      background: rgba(0,161,224,0.1);
-      border: 1px solid rgba(0,161,224,0.25);
-    }
-
-    .card-category {
-      color: var(--muted);
-      background: var(--tag-bg);
-    }
-
-    .card-name   { font-size: 14px; font-weight: 700; margin-bottom: 6px; line-height: 1.3; }
-    .card-brand  { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
-    .card-price  { font-family: 'JetBrains Mono',monospace; font-size: 21px; font-weight: 700; color: var(--success); }
-    .card-price span { font-size: 13px; color: var(--muted); margin-left: 6px; }
-    .card-discount {
-      font-size: 11px;
-      color: #059669;
-      margin-top: 6px;
-    }
-
-    .card-stock {
-      position: absolute;
-      top: 16px; right: 16px;
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 10px rgba(0,200,150,0.6);
-    }
-
-    /* Table View */
-    .products-table {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      margin-bottom: 48px;
-    }
-
-    .products-table.hidden { display: none; }
-
-    .products-table table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .products-table th {
-      background: var(--surface2);
-      padding: 12px 16px;
-      text-align: left;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .products-table td {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
-
-    .products-table tr:last-child td {
-      border-bottom: none;
-    }
-
-    .products-table tr:hover {
-      background: var(--surface2);
-      cursor: pointer;
-    }
-
-    .table-sku {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--accent);
-      background: rgba(0,161,224,0.1);
-      padding: 2px 8px;
-      border-radius: 4px;
-      display: inline-block;
-    }
-
-    .table-category {
-      font-size: 11px;
-      color: var(--muted);
-      background: var(--tag-bg);
-      padding: 2px 8px;
-      border-radius: 4px;
-      display: inline-block;
-    }
-
-    .table-price {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
-      color: var(--success);
-    }
-
-    /* Chart */
-    .chart-container {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 48px;
-    }
-
-    .chart-title {
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 20px;
-      color: var(--text);
-    }
-
-    #priceChart {
-      width: 100%;
-      height: 300px;
-    }
-
-    .explorer {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      margin-bottom: 48px;
-    }
-
-    .explorer-header {
-      background: var(--surface2);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .method-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background: rgba(0,200,150,0.15);
-      color: var(--success);
-      border: 1px solid rgba(0,200,150,0.3);
-    }
-
-    .endpoint-display {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      color: var(--text);
-      flex: 1;
-    }
-
-    .endpoint-display .param { color: var(--warn); }
-
-    .explorer-body { padding: 20px; }
-
-    .url-input-group {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .url-input {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 16px;
-      color: var(--text);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .url-input:focus { border-color: var(--accent); }
-
-    .btn-send, .btn-copy, .btn-export {
-      background: linear-gradient(135deg, var(--accent), #0077a8);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 24px;
-      font-family: 'Syne', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-
-    .btn-send:hover, .btn-copy:hover, .btn-export:hover { 
-      transform: translateY(-1px); 
-      box-shadow: 0 4px 16px rgba(0,161,224,0.3); 
-    }
-
-    .btn-copy, .btn-export {
-      background: linear-gradient(135deg, var(--accent2), #5b21b6);
-      font-size: 12px;
-      padding: 6px 16px;
-    }
-
-    .quick-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-
-    .quick-btn {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .quick-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: rgba(0,161,224,0.06);
-    }
-
-    .response-panel {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .response-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface2);
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .status-pill {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 20px;
-    }
-
-    .status-200 { background: rgba(5,150,105,0.15); color: #047857; border: 1px solid rgba(5,150,105,0.3); }
-    .status-404 { background: rgba(220,38,38,0.15); color: #b91c1c; border: 1px solid rgba(220,38,38,0.3); }
-    .status-waiting { background: rgba(51,65,85,0.15); color: #475569; border: 1px solid var(--border); }
-    
-    [data-theme="dark"] .status-200 { color: var(--success); }
-    [data-theme="dark"] .status-404 { color: var(--error); }
-    [data-theme="dark"] .status-waiting { color: var(--muted); }
-
-    .response-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
-
-    .response-body {
-      padding: 16px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      line-height: 1.7;
-      max-height: 380px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .json-key { color: #7dd3fc; }
-    .json-string { color: #86efac; }
-    .json-number { color: #fbbf24; }
-    .json-bool { color: #c084fc; }
-    .json-null { color: var(--muted); }
-
-    .response-body::-webkit-scrollbar { width: 6px; }
-    .response-body::-webkit-scrollbar-track { background: transparent; }
-    .response-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-    .loading-dots {
-      display: inline-flex;
-      gap: 4px;
-      align-items: center;
-    }
-
-    .loading-dots span {
-      width: 6px; height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: bounce 0.8s ease-in-out infinite;
-    }
-
-    .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
-    .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); opacity: 0.5; }
-      50% { transform: translateY(-4px); opacity: 1; }
-    }
-
-    /* History Panel */
-    .history-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 24px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .history-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--muted);
-      margin-bottom: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .history-item {
-      padding: 8px 12px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .history-item:hover {
-      border-color: var(--accent);
-      background: var(--surface2);
-    }
-
-    .history-time {
-      color: var(--muted);
-      font-size: 10px;
-    }
-
-    .sf-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-
-    .sf-box h3 {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--accent);
-      margin-bottom: 12px;
-    }
-
-    .sf-code {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: #a5f3fc;
-      line-height: 1.6;
-      overflow-x: auto;
-      white-space: pre-wrap;
-    }
-
-    [data-theme="light"] .sf-code {
-      color: #0a2540;
-    }
-
-    .sf-label {
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 32px 0;
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    #backToTop {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: rgba(0,161,224,0.9);
-      color: white;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-      z-index: 999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-    }
-
-    #backToTop.visible {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    #backToTop:hover {
-      background: var(--accent);
-      transform: translateY(-3px);
-    }
-
-    /* Toast Notification */
-    .toast {
-      position: fixed;
-      bottom: 80px;
-      right: 24px;
-      background: var(--success);
-      color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.3s;
-      z-index: 1000;
-      pointer-events: none;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    @media (max-width: 640px) {
-      .products-grid { grid-template-columns: 1fr; }
-      .url-input-group { flex-direction: column; gap: 12px; }
-      #backToTop { bottom: 16px; right: 16px; width: 44px; height: 44px; font-size: 22px; }
-      .catalog-controls { flex-direction: column; }
-      .category-filter { width: 100%; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industrial Equipment Pricing API — Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ── Theme tokens ─────────────────────────────────────────────────────── */
+  :root {
+    --accent:  #00a1e0;
+    --accent2: #6b2fd9;
+    --success: #00c896;
+    --warn:    #f59e0b;
+    --error:   #ef4444;
+    --tax-br:  #10b981;
+    --tax-ar:  #8b5cf6;
+    --tax-mx:  #f59e0b;
+  }
+
+  [data-theme="dark"] {
+    --bg:       #080c14;
+    --surface:  #0d1520;
+    --surface2: #111c2e;
+    --border:   #1e2f47;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --tag-bg:   #0f2340;
+    --header-bg: rgba(8,12,20,0.95);
+    --grid-line: rgba(0,161,224,0.03);
+    --hero-grad: linear-gradient(135deg,#fff 40%,var(--accent));
+    --copy-bg:  rgba(255,255,255,0.06);
+    --copy-hover: rgba(255,255,255,0.12);
+    --toggle-icon: "☀️";
+  }
+
+  [data-theme="light"] {
+    --bg:       #f0f4f8;
+    --surface:  #ffffff;
+    --surface2: #e8eef5;
+    --border:   #cbd5e1;
+    --text:     #0f172a;
+    --muted:    #64748b;
+    --tag-bg:   #dbeafe;
+    --header-bg: rgba(240,244,248,0.95);
+    --grid-line: rgba(0,100,200,0.04);
+    --hero-grad: linear-gradient(135deg,#0f172a 40%,var(--accent));
+    --copy-bg:  rgba(0,0,0,0.05);
+    --copy-hover: rgba(0,0,0,0.1);
+    --toggle-icon: "🌙";
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── Header ────────────────────────────────────────────────────────────── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+    background: var(--header-bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+    transition: background 0.3s, border-color 0.3s;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .logo { display: flex; align-items: center; gap: 12px; }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .logo-text { font-size: 15px; font-weight: 700; color: var(--text); }
+  .logo-sub  { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    background: rgba(0,200,150,0.12);
+    color: var(--success);
+    border: 1px solid rgba(0,200,150,0.25);
+    animation: pulse-badge 2s ease-in-out infinite;
+    white-space: nowrap;
+  }
+
+  @keyframes pulse-badge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.65; }
+  }
+
+  /* ── Theme Toggle ───────────────────────────────────────────────────────── */
+  .theme-btn {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .theme-btn:hover { border-color: var(--accent); background: rgba(0,161,224,0.08); }
+
+  /* ── Language Toggle ────────────────────────────────────────────────────── */
+  .lang-toggle {
+    display: flex;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: background 0.3s, border-color 0.3s;
+  }
+
+  .lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .lang-btn .flag { font-size: 15px; }
+  .lang-btn.active.br { background: rgba(16,185,129,0.15); color: var(--tax-br); }
+  .lang-btn.active.ar { background: rgba(139,92,246,0.15); color: var(--tax-ar); }
+  .lang-btn.active.mx { background: rgba(245,158,11,0.15); color: var(--tax-mx); }
+
+  .lang-separator { width: 1px; background: var(--border); align-self: stretch; }
+
+  /* ── Tax Regime Banner ──────────────────────────────────────────────────── */
+  .tax-banner {
+    padding: 11px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-radius: 10px;
+    border: 1px solid;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.3s ease;
+  }
+
+  .tax-banner.br { background: rgba(16,185,129,0.06);  border-color: rgba(16,185,129,0.25);  color: var(--tax-br); }
+  .tax-banner.ar { background: rgba(139,92,246,0.06);  border-color: rgba(139,92,246,0.25);  color: var(--tax-ar); }
+  .tax-banner.mx { background: rgba(245,158,11,0.06);  border-color: rgba(245,158,11,0.25);  color: var(--tax-mx); }
+
+  .tax-banner-title { font-weight: 700; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+
+  .tax-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .tax-pill { padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tax-pill.br { background: rgba(16,185,129,0.12);  color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
+  .tax-pill.ar { background: rgba(139,92,246,0.12);  color: #c4b5fd; border: 1px solid rgba(139,92,246,0.25); }
+  .tax-pill.mx { background: rgba(245,158,11,0.12);  color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px);} to { opacity:1; transform:translateY(0);} }
+
+  /* ── Hero ───────────────────────────────────────────────────────────────── */
+  .hero { padding: 52px 0 36px; text-align: center; }
+
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: var(--hero-grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 520px;
+    margin: 0 auto 28px;
+    line-height: 1.6;
+    transition: color 0.3s;
+  }
+
+  /* ── Copy-able info boxes ────────────────────────────────────────────────── */
+  .info-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  .info-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    transition: background 0.3s, border-color 0.3s;
+  }
+
+  .info-box .label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .info-box .value { color: var(--accent); font-weight: 600; }
+  .info-box.token .value { color: #a78bfa; }
+
+  .copy-btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--copy-bg);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+  }
+
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,161,224,0.08); }
+  .copy-btn.copied { border-color: var(--success); color: var(--success); background: rgba(0,200,150,0.08); }
+
+  /* ── Section ────────────────────────────────────────────────────────────── */
+  .section { padding: 28px 0; }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── Products Grid ───────────────────────────────────────────────────────── */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  .product-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .product-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .product-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,161,224,0.1); }
+  .product-card:hover::before { opacity: 1; }
+  .product-card.active { border-color: var(--accent); background: var(--surface2); box-shadow: 0 0 0 2px rgba(0,161,224,0.15); }
+  .product-card.active::before { opacity: 1; }
+
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+
+  .card-sku {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    background: rgba(0,161,224,0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,161,224,0.2);
+  }
+
+  .card-category {
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--tag-bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+    transition: background 0.3s;
+  }
+
+  .card-name  { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.3; transition: color 0.3s; }
+  .card-brand { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+
+  .card-price { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--success); }
+  .card-price span { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+
+  .card-discount { font-size: 11px; color: var(--warn); margin-top: 4px; }
+
+  /* Tax block */
+  .card-tax-block {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    display: none;
+    animation: fadeIn 0.25s ease;
+  }
+
+  .card-tax-block.br { background: rgba(16,185,129,0.07);  border: 1px solid rgba(16,185,129,0.2); display: block; }
+  .card-tax-block.ar { background: rgba(139,92,246,0.07);  border: 1px solid rgba(139,92,246,0.2); display: block; }
+  .card-tax-block.mx { background: rgba(245,158,11,0.07);  border: 1px solid rgba(245,158,11,0.2); display: block; }
+
+  .card-tax-price { font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+  .card-tax-price.br { color: #6ee7b7; }
+  .card-tax-price.ar { color: #c4b5fd; }
+  .card-tax-price.mx { color: #fcd34d; }
+
+  .card-tax-caption { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--muted); margin-bottom: 8px; }
+
+  .card-tax-rows { font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1.8; }
+
+  .card-tax-row { display: flex; justify-content: space-between; gap: 6px; }
+  .card-tax-row.br { color: #6ee7b7; opacity: 0.8; }
+  .card-tax-row.ar { color: #c4b5fd; opacity: 0.8; }
+  .card-tax-row.mx { color: #fcd34d; opacity: 0.8; }
+  .card-tax-row.base { opacity: 0.42 !important; }
+
+  .card-tax-total {
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(128,128,128,0.2);
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+  }
+
+  .card-tax-total.br { color: #6ee7b7; }
+  .card-tax-total.ar { color: #c4b5fd; }
+  .card-tax-total.mx { color: #fcd34d; }
+
+  .card-stock {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 8px rgba(0,200,150,0.5);
+  }
+
+  /* ── Explorer ───────────────────────────────────────────────────────────── */
+  .explorer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+
+  .explorer-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .method-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(0,200,150,0.15);
+    color: var(--success);
+    border: 1px solid rgba(0,200,150,0.3);
+  }
+
+  .endpoint-display { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); flex: 1; }
+  .endpoint-display .param { color: var(--warn); }
+
+  .explorer-body { padding: 20px; }
+
+  .url-input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+
+  .url-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s, background 0.3s, color 0.3s;
+  }
+
+  .url-input:focus { border-color: var(--accent); }
+
+  .btn-send {
+    background: linear-gradient(135deg, var(--accent), #0077a8);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-send:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,161,224,0.3); }
+  .btn-send:active { transform: translateY(0); }
+  .btn-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .quick-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+
+  .quick-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .quick-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,161,224,0.06); }
+
+  /* Response */
+  .response-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+
+  .response-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .status-pill { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .status-200     { background: rgba(0,200,150,0.15);  color: var(--success); border: 1px solid rgba(0,200,150,0.3); }
+  .status-404     { background: rgba(239,68,68,0.15);  color: var(--error);   border: 1px solid rgba(239,68,68,0.3); }
+  .status-waiting { background: rgba(100,116,139,0.15); color: var(--muted);  border: 1px solid var(--border); }
+
+  .response-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  .response-body {
+    padding: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    max-height: 380px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    transition: color 0.3s;
+  }
+
+  .json-key    { color: #7dd3fc; }
+  .json-string { color: #86efac; }
+  .json-number { color: #fbbf24; }
+  .json-bool   { color: #c084fc; }
+  .json-null   { color: var(--muted); }
+
+  [data-theme="light"] .json-key    { color: #0369a1; }
+  [data-theme="light"] .json-string { color: #166534; }
+  [data-theme="light"] .json-number { color: #b45309; }
+  [data-theme="light"] .json-bool   { color: #7c3aed; }
+
+  .response-body::-webkit-scrollbar { width: 6px; }
+  .response-body::-webkit-scrollbar-track { background: transparent; }
+  .response-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .loading-dots { display: inline-flex; gap: 4px; align-items: center; }
+  .loading-dots span { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: bounce 0.8s ease-in-out infinite; }
+  .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes bounce { 0%,100%{transform:translateY(0);opacity:0.5;} 50%{transform:translateY(-4px);opacity:1;} }
+
+  /* ── SF Boxes ───────────────────────────────────────────────────────────── */
+  .sf-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 12px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+
+  .sf-box h3 { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+  .sf-code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #a5f3fc;
+    line-height: 1.6;
+    overflow-x: auto;
+    transition: background 0.3s, border-color 0.3s;
+  }
+
+  [data-theme="light"] .sf-code { color: #0369a1; }
+
+  .sf-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ── Footer ─────────────────────────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: border-color 0.3s, color 0.3s;
+  }
+
+  @media (max-width: 640px) {
+    .url-input-group { flex-direction: column; }
+    .products-grid   { grid-template-columns: 1fr; }
+    .lang-btn        { padding: 6px 9px; font-size: 10px; }
+    .info-box        { font-size: 11px; }
+  }
+</style>
 </head>
 <body>
 
@@ -914,105 +614,82 @@
     <div class="logo">
       <div class="logo-icon">🏭</div>
       <div>
-        <div class="logo-text">Industrial Equipment Pricing API</div>
-        <div class="logo-sub">v1.0.0</div>
+        <div class="logo-text">Industrial Equipment API</div>
+        <div class="logo-sub">v2.0.0 · LATAM Pricing · Tax-Aware</div>
       </div>
     </div>
-    <div class="header-actions">
-      <div class="lang-selector">
-        <button class="lang-btn active" data-lang="pt" onclick="changeLanguage('pt')">PT</button>
-        <button class="lang-btn" data-lang="en" onclick="changeLanguage('en')">EN</button>
-        <button class="lang-btn" data-lang="es" onclick="changeLanguage('es')">ES</button>
+    <div class="header-right">
+      <!-- Language/Tax Toggle -->
+      <div class="lang-toggle">
+        <button class="lang-btn br active" id="btnPT" onclick="setLang('pt')">
+          <span class="flag">🇧🇷</span> PT-BR
+        </button>
+        <div class="lang-separator"></div>
+        <button class="lang-btn" id="btnES" onclick="setLang('es')">
+          <span class="flag">🇦🇷</span> ES-AR
+        </button>
+        <div class="lang-separator"></div>
+        <button class="lang-btn" id="btnMX" onclick="setLang('mx')">
+          <span class="flag">🇲🇽</span> ES-MX
+        </button>
       </div>
+      <!-- Dark/Light Mode -->
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
       <div class="badge">● MOCK LIVE</div>
-      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
-        <span id="themeIcon">🌙</span>
-      </button>
     </div>
   </div>
 </header>
 
 <main class="container">
 
+  <!-- Hero -->
   <div class="hero">
     <div class="hero-eyebrow">Agentforce PoC · Panel Interview</div>
     <h1>Industrial Equipment<br>Pricing API</h1>
-    <p>API mockada com dados de equipamentos industriais para integração com Agentforce via Flow HTTP Callout utilizando Named Credential.</p>
+    <p id="heroDesc">API mockada com dados reais de equipamentos industriais para integração com Agentforce via Named Credential.</p>
 
-    <div class="base-url-box">
-      <span>BASE URL</span>
-      <strong id="baseUrl">https://industrial-equipment-pricing-mock-production.up.railway.app</strong>
-      <button class="copy-btn" onclick="copyToClipboard('baseUrl')">📋 Copiar</button>
+    <!-- Base URL with copy -->
+    <div class="info-row">
+      <div class="info-box">
+        <span class="label">BASE URL</span>
+        <span class="value" id="baseUrlVal">https://industrial-equipment-pricing-mock-production.up.railway.app</span>
+        <button class="copy-btn" onclick="copyText('baseUrlVal', this)">COPIAR</button>
+      </div>
     </div>
-
-    <div class="token-box">
-      <span>Bearer Token:</span>
-      <span class="token-value" id="bearerToken">mock-token-latam-2026</span>
-      <button class="copy-btn" onclick="copyToClipboard('bearerToken')">📋 Copiar</button>
+    <!-- Bearer Token with copy -->
+    <div class="info-row">
+      <div class="info-box token">
+        <span class="label">BEARER TOKEN</span>
+        <span class="value" id="tokenVal">mock-token-latam-2026</span>
+        <button class="copy-btn" onclick="copyText('tokenVal', this)">COPIAR</button>
+      </div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">Catálogo de Produtos — 25 equipamentos disponíveis</div>
-    
-    <div class="catalog-controls">
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Buscar produtos..." oninput="filterProducts()">
-      </div>
-      <div class="category-filter" id="categoryFilter"></div>
-      <div class="view-toggle">
-        <button class="view-btn active" id="gridViewBtn" onclick="switchView('grid')" title="Visualização em grade">⊞</button>
-        <button class="view-btn" id="tableViewBtn" onclick="switchView('table')" title="Visualização em tabela">≡</button>
-      </div>
-      <button class="btn-export" onclick="exportToCSV()">📥 Exportar CSV</button>
-    </div>
+  <!-- Tax Regime Banner -->
+  <div id="taxBanner" class="tax-banner br" style="margin-bottom:8px">
+    <span class="tax-banner-title" id="taxBannerTitle">🇧🇷 Regime Tributário Brasil — impostos embutidos nos preços</span>
+    <div class="tax-pills" id="taxPills"></div>
+  </div>
 
+  <!-- Products -->
+  <div class="section">
+    <div class="section-title" id="catalogTitle">Catálogo de Produtos — Clique para consultar preço</div>
     <div class="products-grid" id="productsGrid"></div>
-    
-    <div class="products-table hidden" id="productsTable">
-      <table>
-        <thead>
-          <tr>
-            <th>SKU</th>
-            <th>Produto</th>
-            <th>Categoria</th>
-            <th>Marca</th>
-            <th>Preço (USD)</th>
-            <th>Desconto</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">Comparação de Preços</div>
-    <div class="chart-container">
-      <div class="chart-title">Top 10 Produtos por Preço (USD)</div>
-      <canvas id="priceChart"></canvas>
-    </div>
-  </div>
-
+  <!-- API Explorer -->
   <div class="section">
     <div class="section-title">API Explorer — Teste os endpoints</div>
-    
-    <div class="history-panel" id="historyPanel">
-      <div class="history-title">📋 Histórico de Consultas</div>
-      <div id="historyList"></div>
-    </div>
-
     <div class="explorer">
       <div class="explorer-header">
         <span class="method-badge">GET</span>
         <span class="endpoint-display">/prices/<span class="param">{product_code}</span></span>
-        <span id="endpointLabel" style="font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace;">
-          → endpoint usado pelo Agentforce
-        </span>
+        <span id="explorerNote" style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;">→ usado pelo Agentforce · impostos BR embutidos</span>
       </div>
       <div class="explorer-body">
         <div class="url-input-group">
-          <input class="url-input" id="urlInput" type="text" placeholder="/prices/SKU-COMP-001" value="/prices/SKU-COMP-001" aria-label="Endpoint da API" />
+          <input class="url-input" id="urlInput" type="text" placeholder="/prices/SKU-COMP-001" value="/prices/SKU-COMP-001" />
           <button class="btn-send" id="sendBtn" onclick="callAPI()">▶ Executar</button>
         </div>
         <div class="quick-buttons" id="quickBtns"></div>
@@ -1020,49 +697,78 @@
           <div class="response-header">
             <span class="status-pill status-waiting" id="statusPill">Aguardando...</span>
             <span class="response-meta" id="responseMeta"></span>
-            <button class="btn-copy" onclick="copyResponse()">📋 Copiar JSON</button>
           </div>
           <div class="response-body" id="responseBody">
-Selecione um produto acima ou clique em "Executar" para ver a resposta da API
+// Selecione um produto acima ou clique em "Executar" para ver a resposta da API
+// Este é o JSON que o Agentforce receberá ao chamar a Action de preço
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Salesforce Integration -->
   <div class="section">
     <div class="section-title">Configuração Salesforce</div>
+
     <div class="sf-box">
-      <h3 id="sfTitle1">Named Credential — Flow HTTP Callout</h3>
-      <div class="sf-label" id="sfLabel1">Endpoint no Flow (Get_Product_Price_From_API)</div>
-      <div class="sf-code">
-{!$Credential.PricingAPI_NC}/prices/{!productCode}
+      <h3>⚡ Named Credential — Flow HTTP Callout</h3>
+      <div class="sf-label">Endpoint no Flow (Get_Product_Price_From_API)</div>
+      <div class="sf-code">{!$Credential.PricingAPI_NC}/prices/{!productCode}
+
 Method: GET
-Header:
-  Authorization → Bearer mock-token-latam-2026
-Timeout:
-  10000ms (10s)
-      </div>
+Header: Authorization → Bearer mock-token-latam-2026
+Header: Accept-Language → pt-BR | es-AR | es-MX
+Timeout: 10000ms (10s)</div>
     </div>
+
     <div class="sf-box">
-      <h3 id="sfTitle2">Mapeamento de campos — Flow Assignment</h3>
-      <div class="sf-code">
-productName ← {!httpResponse.body.product_name}
-unitPrice ← {!httpResponse.body.unit_price}
-currencyCode ← {!httpResponse.body.currency}
-priceBRL ← {!httpResponse.body.price_brl}
-discountPct ← {!httpResponse.body.discount_reseller_pct}
-lastUpdated ← {!httpResponse.body.last_updated}
-      </div>
+      <h3>📋 Mapeamento de campos — Flow Assignment após HTTP Callout</h3>
+      <div class="sf-code">productName          ← {!httpResponse.body.product_name}
+unitPrice            ← {!httpResponse.body.unit_price}
+currencyCode         ← {!httpResponse.body.currency}
+priceBRL             ← {!httpResponse.body.price_brl}
+priceMXN             ← {!httpResponse.body.price_mxn}
+priceARS             ← {!httpResponse.body.price_ars}
+discountPct          ← {!httpResponse.body.discount_reseller_pct}
+discountVol10Pct     ← {!httpResponse.body.discount_volume_10_pct}
+discountVol20Pct     ← {!httpResponse.body.discount_volume_20_pct}
+lastUpdated          ← {!httpResponse.body.last_updated}
+— campos de impostos regionais —
+taxRegime            ← {!httpResponse.body.tax_regime}
+priceBaseLocal       ← {!httpResponse.body.price_base_local}
+priceWithTaxes       ← {!httpResponse.body.price_with_taxes}
+priceAfterDiscount   ← {!httpResponse.body.price_after_discount}
+taxTotalPct          ← {!httpResponse.body.tax_breakdown.total_pct}</div>
     </div>
+
     <div class="sf-box">
-      <h3 id="sfTitle3">Resposta do Agentforce ao parceiro</h3>
-      <div class="sf-code" id="sfExample">
-"O Compressor de Ar Industrial XR-200 (SKU-COMP-001)
-tem preço unitário de USD 4.850,00 (BRL 29.100,00).
-Como revendedor você possui 12% de desconto.
-Deseja que eu gere uma cotação?"
-      </div>
+      <h3>🔍 Resposta do Agentforce ao parceiro (exemplo Brasil)</h3>
+      <div class="sf-code">"O Compressor de Ar Industrial XR-200 (SKU-COMP-001) tem o
+preço unitário de USD 4.850,00 (BRL 29.100,00).
+Com impostos brasileiros (IPI 5% + ICMS 12% + PIS 1,65% + COFINS 7,6% = 26,25%)
+o preço final é R$ 36.718,50. Como revendedor, você tem direito
+a 12% de desconto. Deseja que eu crie uma cotação formal para este produto?"</div>
+    </div>
+
+    <div class="sf-box">
+      <h3>🔍 Respuesta del Agentforce al socio (ejemplo Argentina)</h3>
+      <div class="sf-code">"El Compresor de Aire Industrial XR-200 (SKU-COMP-001) tiene
+precio base de USD 4.850,00 (ARS 4.656.000,00).
+Con impuestos argentinos (IVA 21% + Ingresos Brutos 3% +
+Percepción IVA 10,5% = 34,5%) el precio final es ARS 6.262.320,00.
+Como revendedor, tiene derecho a 12% de descuento adicional.
+¿Desea que genere una cotización formal para este producto?"</div>
+    </div>
+
+    <div class="sf-box">
+      <h3>🔍 Respuesta del Agentforce al socio (ejemplo México)</h3>
+      <div class="sf-code">"El Compresor de Aire Industrial XR-200 (SKU-COMP-001) tiene
+precio base de USD 4.850,00 (MXN 83.220,00).
+Con impuestos mexicanos (IVA 16% + Derecho de Importación 5% = 21%)
+el precio final es MXN 100.696,20.
+Como revendedor, tiene derecho a 12% de descuento adicional.
+¿Desea que genere una cotización formal para este producto?"</div>
     </div>
   </div>
 
@@ -1070,797 +776,433 @@ Deseja que eu gere uma cotação?"
 
 <footer>
   <div class="container">
-    Industrial Equipment Pricing API · Developed by Juliana Haddad
+    Industrial Equipment Pricing API | Juliana Haddad
   </div>
 </footer>
 
-<button id="backToTop" aria-label="Voltar ao topo da página">↑</button>
-<div class="toast" id="toast"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// ═══════════════════════════════════════════════════════════════════════════
-// MOCK DATA - 25 PRODUTOS COM NOVAS CATEGORIAS
-// ═══════════════════════════════════════════════════════════════════════════
+// ─── State ────────────────────────────────────────────────────────────────
+let currentLang = 'pt'
 
-const MOCK_PRICES = {
-  // Compressores
-  "SKU-COMP-001": { id:1, product_code:"SKU-COMP-001", product_name:"Compressor de Ar Industrial XR-200", unit_price:4850.00, currency:"USD", price_brl:29100.00, price_mxn:83220.00, price_ars:4656000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-COMP-002": { id:2, product_code:"SKU-COMP-002", product_name:"Compressor de Parafuso Industrial SR-500", unit_price:12400.00, currency:"USD", price_brl:74400.00, price_mxn:212880.00, price_ars:11904000.00, discount_reseller_pct:15, discount_volume_10_pct:6, discount_volume_20_pct:10, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-COMP-003": { id:10, product_code:"SKU-COMP-003", product_name:"Secador Frigorífico de Ar SF-100", unit_price:3100.00, currency:"USD", price_brl:18600.00, price_mxn:53187.00, price_ars:2976000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-COMP-004": { id:11, product_code:"SKU-COMP-004", product_name:"Compressor Portátil CP-150", unit_price:1850.00, currency:"USD", price_brl:11100.00, price_mxn:31725.00, price_ars:1776000.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Bombas
-  "SKU-BOMB-001": { id:3, product_code:"SKU-BOMB-001", product_name:"Bomba Hidráulica BH-50", unit_price:2750.00, currency:"USD", price_brl:16500.00, price_mxn:47190.00, price_ars:2640000.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-BOMB-002": { id:4, product_code:"SKU-BOMB-002", product_name:"Bomba Centrífuga BC-200", unit_price:1890.00, currency:"USD", price_brl:11340.00, price_mxn:32427.00, price_ars:1814400.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-BOMB-003": { id:12, product_code:"SKU-BOMB-003", product_name:"Bomba Submersível BS-300", unit_price:3400.00, currency:"USD", price_brl:20400.00, price_mxn:58308.00, price_ars:3264000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Motores
-  "SKU-MOTOR-001": { id:5, product_code:"SKU-MOTOR-001", product_name:"Motor Elétrico Trifásico ME-300", unit_price:3200.00, currency:"USD", price_brl:19200.00, price_mxn:54912.00, price_ars:3072000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-MOTOR-002": { id:6, product_code:"SKU-MOTOR-002", product_name:"Motor a Diesel Industrial MD-450", unit_price:18500.00, currency:"USD", price_brl:111000.00, price_mxn:317370.00, price_ars:17760000.00, discount_reseller_pct:18, discount_volume_10_pct:7, discount_volume_20_pct:12, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-MOTOR-003": { id:13, product_code:"SKU-MOTOR-003", product_name:"Motor Elétrico Monofásico ME-150", unit_price:1650.00, currency:"USD", price_brl:9900.00, price_mxn:28305.00, price_ars:1584000.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Peças de Reposição
-  "SKU-PECA-001": { id:7, product_code:"SKU-PECA-001", product_name:"Filtro de Ar FA-XR200", unit_price:85.00, currency:"USD", price_brl:510.00, price_mxn:1458.15, price_ars:81600.00, discount_reseller_pct:8, discount_volume_10_pct:3, discount_volume_20_pct:5, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-PECA-002": { id:8, product_code:"SKU-PECA-002", product_name:"Válvula de Segurança VS-12BAR", unit_price:145.00, currency:"USD", price_brl:870.00, price_mxn:2487.45, price_ars:139200.00, discount_reseller_pct:8, discount_volume_10_pct:3, discount_volume_20_pct:5, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-PECA-003": { id:9, product_code:"SKU-PECA-003", product_name:"Óleo Lubrificante Compressor OL-46", unit_price:38.00, currency:"USD", price_brl:228.00, price_mxn:652.14, price_ars:36480.00, discount_reseller_pct:5, discount_volume_10_pct:2, discount_volume_20_pct:4, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-PECA-004": { id:14, product_code:"SKU-PECA-004", product_name:"Kit de Manutenção KM-500", unit_price:420.00, currency:"USD", price_brl:2520.00, price_mxn:7203.00, price_ars:403200.00, discount_reseller_pct:10, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Válvulas e Conexões
-  "SKU-VALV-001": { id:15, product_code:"SKU-VALV-001", product_name:"Válvula Esfera 2 Polegadas VE-02", unit_price:220.00, currency:"USD", price_brl:1320.00, price_mxn:3774.00, price_ars:211200.00, discount_reseller_pct:9, discount_volume_10_pct:4, discount_volume_20_pct:6, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-VALV-002": { id:16, product_code:"SKU-VALV-002", product_name:"Válvula Solenoide VS-24V", unit_price:380.00, currency:"USD", price_brl:2280.00, price_mxn:6516.00, price_ars:364800.00, discount_reseller_pct:10, discount_volume_10_pct:5, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-CONEX-001": { id:17, product_code:"SKU-CONEX-001", product_name:"Conexão Rápida Rosca NPT CR-01", unit_price:45.00, currency:"USD", price_brl:270.00, price_mxn:771.75, price_ars:43200.00, discount_reseller_pct:7, discount_volume_10_pct:3, discount_volume_20_pct:5, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-CONEX-002": { id:18, product_code:"SKU-CONEX-002", product_name:"Manifold de Distribuição MD-04", unit_price:560.00, currency:"USD", price_brl:3360.00, price_mxn:9604.80, price_ars:537600.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Ferramentas Elétricas
-  "SKU-FERR-001": { id:19, product_code:"SKU-FERR-001", product_name:"Furadeira Industrial FI-800W", unit_price:380.00, currency:"USD", price_brl:2280.00, price_mxn:6516.00, price_ars:364800.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-FERR-002": { id:20, product_code:"SKU-FERR-002", product_name:"Esmerilhadeira Angular EA-2200W", unit_price:495.00, currency:"USD", price_brl:2970.00, price_mxn:8488.65, price_ars:475200.00, discount_reseller_pct:11, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-FERR-003": { id:21, product_code:"SKU-FERR-003", product_name:"Parafusadeira Industrial PI-1500W", unit_price:620.00, currency:"USD", price_brl:3720.00, price_mxn:10633.20, price_ars:595200.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:9, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Sistemas de Refrigeração
-  "SKU-REFR-001": { id:22, product_code:"SKU-REFR-001", product_name:"Unidade Condensadora UC-3HP", unit_price:2850.00, currency:"USD", price_brl:17100.00, price_mxn:48895.50, price_ars:2736000.00, discount_reseller_pct:14, discount_volume_10_pct:6, discount_volume_20_pct:10, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-REFR-002": { id:23, product_code:"SKU-REFR-002", product_name:"Evaporador Industrial EI-5000", unit_price:1950.00, currency:"USD", price_brl:11700.00, price_mxn:33457.50, price_ars:1872000.00, discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8, last_updated:"2026-03-01T00:00:00Z" },
-  
-  // Geradores de Energia
-  "SKU-GER-001": { id:24, product_code:"SKU-GER-001", product_name:"Gerador Diesel 25KVA GD-25", unit_price:8900.00, currency:"USD", price_brl:53400.00, price_mxn:152631.00, price_ars:8544000.00, discount_reseller_pct:16, discount_volume_10_pct:7, discount_volume_20_pct:11, last_updated:"2026-03-01T00:00:00Z" },
-  "SKU-GER-002": { id:25, product_code:"SKU-GER-002", product_name:"Gerador a Gasolina 5KVA GG-05", unit_price:1450.00, currency:"USD", price_brl:8700.00, price_mxn:24865.50, price_ars:1392000.00, discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7, last_updated:"2026-03-01T00:00:00Z" }
-};
+// ─── Theme ────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement
+  const isDark = html.getAttribute('data-theme') === 'dark'
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark')
+  document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️'
+}
 
-const MOCK_PRODUCTS = [
-  // Compressores
-  { id:"SKU-COMP-001", name:"Compressor de Ar Industrial XR-200", category:"Compressores", brand:"TechAir", unit_price:4850, currency:"USD", stock:42, discount_reseller_pct:12 },
-  { id:"SKU-COMP-002", name:"Compressor de Parafuso Industrial SR-500", category:"Compressores", brand:"TechAir", unit_price:12400, currency:"USD", stock:18, discount_reseller_pct:15 },
-  { id:"SKU-COMP-003", name:"Secador Frigorífico SF-100", category:"Compressores", brand:"TechAir", unit_price:3100, currency:"USD", stock:28, discount_reseller_pct:12 },
-  { id:"SKU-COMP-004", name:"Compressor Portátil CP-150", category:"Compressores", brand:"AirMax", unit_price:1850, currency:"USD", stock:55, discount_reseller_pct:10 },
-  
-  // Bombas
-  { id:"SKU-BOMB-001", name:"Bomba Hidráulica BH-50", category:"Bombas", brand:"HydroForce", unit_price:2750, currency:"USD", stock:65, discount_reseller_pct:10 },
-  { id:"SKU-BOMB-002", name:"Bomba Centrífuga BC-200", category:"Bombas", brand:"FluidMax", unit_price:1890, currency:"USD", stock:94, discount_reseller_pct:10 },
-  { id:"SKU-BOMB-003", name:"Bomba Submersível BS-300", category:"Bombas", brand:"AquaPro", unit_price:3400, currency:"USD", stock:32, discount_reseller_pct:12 },
-  
-  // Motores
-  { id:"SKU-MOTOR-001", name:"Motor Elétrico Trifásico ME-300", category:"Motores", brand:"ElectroDrive", unit_price:3200, currency:"USD", stock:37, discount_reseller_pct:12 },
-  { id:"SKU-MOTOR-002", name:"Motor a Diesel Industrial MD-450", category:"Motores", brand:"PowerGen", unit_price:18500, currency:"USD", stock:9, discount_reseller_pct:18 },
-  { id:"SKU-MOTOR-003", name:"Motor Elétrico Monofásico ME-150", category:"Motores", brand:"ElectroDrive", unit_price:1650, currency:"USD", stock:68, discount_reseller_pct:10 },
-  
-  // Peças de Reposição
-  { id:"SKU-PECA-001", name:"Filtro de Ar FA-XR200", category:"Peças de Reposição", brand:"TechAir", unit_price:85, currency:"USD", stock:320, discount_reseller_pct:8 },
-  { id:"SKU-PECA-002", name:"Válvula de Segurança VS-12BAR", category:"Peças de Reposição", brand:"SafeValve", unit_price:145, currency:"USD", stock:185, discount_reseller_pct:8 },
-  { id:"SKU-PECA-003", name:"Óleo Lubrificante OL-46", category:"Peças de Reposição", brand:"LubraTech", unit_price:38, currency:"USD", stock:500, discount_reseller_pct:5 },
-  { id:"SKU-PECA-004", name:"Kit de Manutenção KM-500", category:"Peças de Reposição", brand:"MaintenancePro", unit_price:420, currency:"USD", stock:75, discount_reseller_pct:10 },
-  
-  // Válvulas e Conexões
-  { id:"SKU-VALV-001", name:"Válvula Esfera 2 Polegadas VE-02", category:"Válvulas e Conexões", brand:"ValveTech", unit_price:220, currency:"USD", stock:150, discount_reseller_pct:9 },
-  { id:"SKU-VALV-002", name:"Válvula Solenoide VS-24V", category:"Válvulas e Conexões", brand:"AutoControl", unit_price:380, currency:"USD", stock:88, discount_reseller_pct:10 },
-  { id:"SKU-CONEX-001", name:"Conexão Rápida Rosca NPT CR-01", category:"Válvulas e Conexões", brand:"FastConnect", unit_price:45, currency:"USD", stock:420, discount_reseller_pct:7 },
-  { id:"SKU-CONEX-002", name:"Manifold de Distribuição MD-04", category:"Válvulas e Conexões", brand:"FlowMaster", unit_price:560, currency:"USD", stock:62, discount_reseller_pct:12 },
-  
-  // Ferramentas Elétricas
-  { id:"SKU-FERR-001", name:"Furadeira Industrial FI-800W", category:"Ferramentas Elétricas", brand:"PowerTools", unit_price:380, currency:"USD", stock:95, discount_reseller_pct:10 },
-  { id:"SKU-FERR-002", name:"Esmerilhadeira Angular EA-2200W", category:"Ferramentas Elétricas", brand:"GrindPro", unit_price:495, currency:"USD", stock:72, discount_reseller_pct:11 },
-  { id:"SKU-FERR-003", name:"Parafusadeira Industrial PI-1500W", category:"Ferramentas Elétricas", brand:"FastDrill", unit_price:620, currency:"USD", stock:58, discount_reseller_pct:12 },
-  
-  // Sistemas de Refrigeração
-  { id:"SKU-REFR-001", name:"Unidade Condensadora UC-3HP", category:"Sistemas de Refrigeração", brand:"CoolTech", unit_price:2850, currency:"USD", stock:24, discount_reseller_pct:14 },
-  { id:"SKU-REFR-002", name:"Evaporador Industrial EI-5000", category:"Sistemas de Refrigeração", brand:"ChillMax", unit_price:1950, currency:"USD", stock:36, discount_reseller_pct:12 },
-  
-  // Geradores de Energia
-  { id:"SKU-GER-001", name:"Gerador Diesel 25KVA GD-25", category:"Geradores de Energia", brand:"PowerGen", unit_price:8900, currency:"USD", stock:15, discount_reseller_pct:16 },
-  { id:"SKU-GER-002", name:"Gerador a Gasolina 5KVA GG-05", category:"Geradores de Energia", brand:"GenPower", unit_price:1450, currency:"USD", stock:44, discount_reseller_pct:10 }
-];
+// ─── Copy to clipboard ────────────────────────────────────────────────────
+function copyText(elementId, btn) {
+  const text = document.getElementById(elementId).textContent
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ COPIADO'
+    btn.classList.add('copied')
+    setTimeout(() => { btn.textContent = 'COPIAR'; btn.classList.remove('copied') }, 2000)
+  }).catch(() => {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+    btn.textContent = '✓ COPIADO'
+    btn.classList.add('copied')
+    setTimeout(() => { btn.textContent = 'COPIAR'; btn.classList.remove('copied') }, 2000)
+  })
+}
 
-// ═══════════════════════════════════════════════════════════════════════════
-// GLOBAL STATE
-// ═══════════════════════════════════════════════════════════════════════════
-
-let currentView = 'grid';
-let currentFilter = 'Todos';
-let currentFilterOriginal = 'Todos';
-let searchTerm = '';
-let queryHistory = JSON.parse(localStorage.getItem('queryHistory') || '[]');
-let lastResponse = null;
-let currentLang = localStorage.getItem('language') || 'pt';
-
-// ═══════════════════════════════════════════════════════════════════════════
-// TRANSLATIONS
-// ═══════════════════════════════════════════════════════════════════════════
-
-const translations = {
+// ─── Tax Regimes ──────────────────────────────────────────────────────────
+const TAX_REGIMES = {
   pt: {
-    title: "Industrial Equipment<br>Pricing API",
-    subtitle: "API mockada com dados de equipamentos industriais para integração com Agentforce via Flow HTTP Callout utilizando Named Credential.",
-    baseUrl: "BASE URL",
-    bearerToken: "Bearer Token:",
-    copy: "Copiar",
-    catalogTitle: "Catálogo de Produtos — 25 equipamentos disponíveis",
-    searchPlaceholder: "Buscar produtos...",
-    allCategories: "Todos",
-    exportCSV: "Exportar CSV",
-    chartTitle: "Top 10 Produtos por Preço (USD)",
-    apiExplorer: "API Explorer — Teste os endpoints",
-    historyTitle: "Histórico de Consultas",
-    noHistory: "Nenhuma consulta ainda",
-    waiting: "Aguardando...",
-    execute: "Executar",
-    copyJSON: "Copiar JSON",
-    salesforceConfig: "Configuração Salesforce",
-    footer: "Industrial Equipment Pricing API · Desenvolvido por Juliana Haddad",
-    priceComparison: "Comparação de Preços",
-    discount: "desconto revendedor",
-    copied: "Copiado!",
-    copyError: "Erro ao copiar",
-    csvExported: "CSV exportado!",
-    selectResponse: "Selecione um produto acima ou clique em \"Executar\" para ver a resposta da API",
-    endpointLabel: "→ endpoint usado pelo Agentforce",
-    sfTitle1: "Named Credential — Flow HTTP Callout",
-    sfLabel1: "Endpoint no Flow (Get_Product_Price_From_API)",
-    sfTitle2: "Mapeamento de campos — Flow Assignment",
-    sfTitle3: "Resposta do Agentforce ao parceiro",
-    sfExample: `"O Compressor de Ar Industrial XR-200 (SKU-COMP-001)
-tem preço unitário de USD 4.850,00 (BRL 29.100,00).
-Como revendedor você possui 12% de desconto.
-Deseja que eu gere uma cotação?"`,
-    categories: {
-      "Compressores": "Compressores",
-      "Bombas": "Bombas",
-      "Motores": "Motores",
-      "Peças de Reposição": "Peças de Reposição",
-      "Válvulas e Conexões": "Válvulas e Conexões",
-      "Ferramentas Elétricas": "Ferramentas Elétricas",
-      "Sistemas de Refrigeração": "Sistemas de Refrigeração",
-      "Geradores de Energia": "Geradores de Energia"
-    }
-  },
-  en: {
-    title: "Industrial Equipment<br>Pricing API",
-    subtitle: "Mock API with industrial equipment data for integration with Agentforce via Flow HTTP Callout using Named Credential.",
-    baseUrl: "BASE URL",
-    bearerToken: "Bearer Token:",
-    copy: "Copy",
-    catalogTitle: "Product Catalog — 25 available equipments",
-    searchPlaceholder: "Search products...",
-    allCategories: "All",
-    exportCSV: "Export CSV",
-    chartTitle: "Top 10 Products by Price (USD)",
-    apiExplorer: "API Explorer — Test endpoints",
-    historyTitle: "Query History",
-    noHistory: "No queries yet",
-    waiting: "Waiting...",
-    execute: "Execute",
-    copyJSON: "Copy JSON",
-    salesforceConfig: "Salesforce Configuration",
-    footer: "Industrial Equipment Pricing API · Developed by Juliana Haddad",
-    priceComparison: "Price Comparison",
-    discount: "reseller discount",
-    copied: "Copied!",
-    copyError: "Copy error",
-    csvExported: "CSV exported!",
-    selectResponse: "Select a product above or click \"Execute\" to see the API response",
-    endpointLabel: "→ endpoint used by Agentforce",
-    sfTitle1: "Named Credential — Flow HTTP Callout",
-    sfLabel1: "Endpoint in Flow (Get_Product_Price_From_API)",
-    sfTitle2: "Field Mapping — Flow Assignment",
-    sfTitle3: "Agentforce Response to Partner",
-    sfExample: `"The Industrial Air Compressor XR-200 (SKU-COMP-001)
-has a unit price of USD 4,850.00 (BRL 29,100.00).
-As a reseller, you have a 12% discount.
-Would you like me to generate a quote?"`,
-    categories: {
-      "Compressores": "Compressors",
-      "Bombas": "Pumps",
-      "Motores": "Motors",
-      "Peças de Reposição": "Spare Parts",
-      "Válvulas e Conexões": "Valves & Connections",
-      "Ferramentas Elétricas": "Power Tools",
-      "Sistemas de Refrigeração": "Refrigeration Systems",
-      "Geradores de Energia": "Power Generators"
+    name: 'Brasil', flag: '🇧🇷',
+    currency: 'BRL', currencySymbol: 'R$', locale: 'pt-BR',
+    bannerClass: 'br', fxRate: 6.0,
+    taxes: {
+      'Compressores':       { 'IPI': 5,   'ICMS': 12, 'PIS': 1.65, 'COFINS': 7.6 },
+      'Bombas':             { 'IPI': 5,   'ICMS': 12, 'PIS': 1.65, 'COFINS': 7.6 },
+      'Motores':            { 'IPI': 5,   'ICMS': 12, 'PIS': 1.65, 'COFINS': 7.6 },
+      'Geradores':          { 'IPI': 5,   'ICMS': 12, 'PIS': 1.65, 'COFINS': 7.6 },
+      'Tratamento de Ar':   { 'IPI': 5,   'ICMS': 12, 'PIS': 1.65, 'COFINS': 7.6 },
+      'Peças de Reposição': { 'IPI': 10,  'ICMS': 18, 'PIS': 1.65, 'COFINS': 7.6 },
     },
-    products: {
-      "SKU-COMP-001": "Industrial Air Compressor XR-200",
-      "SKU-COMP-002": "Industrial Screw Compressor SR-500",
-      "SKU-COMP-003": "Refrigerated Air Dryer SF-100",
-      "SKU-COMP-004": "Portable Compressor CP-150",
-      "SKU-BOMB-001": "Hydraulic Pump BH-50",
-      "SKU-BOMB-002": "Centrifugal Pump BC-200",
-      "SKU-BOMB-003": "Submersible Pump BS-300",
-      "SKU-MOTOR-001": "Three-Phase Electric Motor ME-300",
-      "SKU-MOTOR-002": "Industrial Diesel Motor MD-450",
-      "SKU-MOTOR-003": "Single-Phase Electric Motor ME-150",
-      "SKU-PECA-001": "Air Filter FA-XR200",
-      "SKU-PECA-002": "Safety Valve VS-12BAR",
-      "SKU-PECA-003": "Compressor Lubricating Oil OL-46",
-      "SKU-PECA-004": "Maintenance Kit KM-500",
-      "SKU-VALV-001": "2-Inch Ball Valve VE-02",
-      "SKU-VALV-002": "Solenoid Valve VS-24V",
-      "SKU-CONEX-001": "Quick Connect NPT Thread CR-01",
-      "SKU-CONEX-002": "Distribution Manifold MD-04",
-      "SKU-FERR-001": "Industrial Drill FI-800W",
-      "SKU-FERR-002": "Angle Grinder EA-2200W",
-      "SKU-FERR-003": "Industrial Screwdriver PI-1500W",
-      "SKU-REFR-001": "Condensing Unit UC-3HP",
-      "SKU-REFR-002": "Industrial Evaporator EI-5000",
-      "SKU-GER-001": "Diesel Generator 25KVA GD-25",
-      "SKU-GER-002": "Gasoline Generator 5KVA GG-05"
-    }
+    bannerLabel: '🇧🇷 Regime Tributário Brasil — impostos embutidos nos preços',
+    heroDesc: 'API mockada com dados reais de equipamentos industriais para integração com Agentforce via Named Credential.',
+    catalogTitle: 'Catálogo de Produtos — Clique para consultar preço',
+    explorerNote: '→ usado pelo Agentforce · impostos BR embutidos',
+    priceClass: 'br', discountSuffix: 'desconto revendedor',
   },
   es: {
-    title: "Industrial Equipment<br>Pricing API",
-    subtitle: "API simulada con datos de equipos industriales para integración con Agentforce vía Flow HTTP Callout usando Named Credential.",
-    baseUrl: "URL BASE",
-    bearerToken: "Bearer Token:",
-    copy: "Copiar",
-    catalogTitle: "Catálogo de Productos — 25 equipos disponibles",
-    searchPlaceholder: "Buscar productos...",
-    allCategories: "Todos",
-    exportCSV: "Exportar CSV",
-    chartTitle: "Top 10 Productos por Precio (USD)",
-    apiExplorer: "API Explorer — Probar endpoints",
-    historyTitle: "Historial de Consultas",
-    noHistory: "Sin consultas aún",
-    waiting: "Esperando...",
-    execute: "Ejecutar",
-    copyJSON: "Copiar JSON",
-    salesforceConfig: "Configuración Salesforce",
-    footer: "Industrial Equipment Pricing API · Desarrollado por Juliana Haddad",
-    priceComparison: "Comparación de Precios",
-    discount: "descuento distribuidor",
-    copied: "¡Copiado!",
-    copyError: "Error al copiar",
-    csvExported: "¡CSV exportado!",
-    selectResponse: "Seleccione un producto arriba o haga clic en \"Ejecutar\" para ver la respuesta de la API",
-    endpointLabel: "→ endpoint usado por Agentforce",
-    sfTitle1: "Named Credential — Flow HTTP Callout",
-    sfLabel1: "Endpoint en Flow (Get_Product_Price_From_API)",
-    sfTitle2: "Mapeo de campos — Flow Assignment",
-    sfTitle3: "Respuesta de Agentforce al socio",
-    sfExample: `"El Compresor de Aire Industrial XR-200 (SKU-COMP-001)
-tiene un precio unitario de USD 4.850,00 (BRL 29.100,00).
-Como distribuidor, tiene un 12% de descuento.
-¿Desea que genere una cotización?"`,
-    categories: {
-      "Compressores": "Compresores",
-      "Bombas": "Bombas",
-      "Motores": "Motores",
-      "Peças de Reposição": "Repuestos",
-      "Válvulas e Conexões": "Válvulas y Conexiones",
-      "Ferramentas Elétricas": "Herramientas Eléctricas",
-      "Sistemas de Refrigeração": "Sistemas de Refrigeración",
-      "Geradores de Energia": "Generadores de Energía"
+    name: 'Argentina', flag: '🇦🇷',
+    currency: 'ARS', currencySymbol: 'ARS', locale: 'es-AR',
+    bannerClass: 'ar', fxRate: 960,
+    taxes: {
+      'Compressores':       { 'IVA': 21, 'Ingresos Brutos': 3, 'Percepción IVA': 10.5 },
+      'Bombas':             { 'IVA': 21, 'Ingresos Brutos': 3, 'Percepción IVA': 10.5 },
+      'Motores':            { 'IVA': 21, 'Ingresos Brutos': 3, 'Percepción IVA': 10.5 },
+      'Geradores':          { 'IVA': 21, 'Ingresos Brutos': 3, 'Percepción IVA': 10.5 },
+      'Tratamento de Ar':   { 'IVA': 21, 'Ingresos Brutos': 3, 'Percepción IVA': 10.5 },
+      'Peças de Reposição': { 'IVA': 21, 'Ingresos Brutos': 3, 'Percepción IVA': 10.5 },
     },
-    products: {
-      "SKU-COMP-001": "Compresor de Aire Industrial XR-200",
-      "SKU-COMP-002": "Compresor de Tornillo Industrial SR-500",
-      "SKU-COMP-003": "Secador Frigorífico de Aire SF-100",
-      "SKU-COMP-004": "Compresor Portátil CP-150",
-      "SKU-BOMB-001": "Bomba Hidráulica BH-50",
-      "SKU-BOMB-002": "Bomba Centrífuga BC-200",
-      "SKU-BOMB-003": "Bomba Sumergible BS-300",
-      "SKU-MOTOR-001": "Motor Eléctrico Trifásico ME-300",
-      "SKU-MOTOR-002": "Motor Diésel Industrial MD-450",
-      "SKU-MOTOR-003": "Motor Eléctrico Monofásico ME-150",
-      "SKU-PECA-001": "Filtro de Aire FA-XR200",
-      "SKU-PECA-002": "Válvula de Seguridad VS-12BAR",
-      "SKU-PECA-003": "Aceite Lubricante Compresor OL-46",
-      "SKU-PECA-004": "Kit de Mantenimiento KM-500",
-      "SKU-VALV-001": "Válvula de Bola 2 Pulgadas VE-02",
-      "SKU-VALV-002": "Válvula Solenoide VS-24V",
-      "SKU-CONEX-001": "Conexión Rápida Rosca NPT CR-01",
-      "SKU-CONEX-002": "Manifold de Distribución MD-04",
-      "SKU-FERR-001": "Taladro Industrial FI-800W",
-      "SKU-FERR-002": "Amoladora Angular EA-2200W",
-      "SKU-FERR-003": "Atornillador Industrial PI-1500W",
-      "SKU-REFR-001": "Unidad Condensadora UC-3HP",
-      "SKU-REFR-002": "Evaporador Industrial EI-5000",
-      "SKU-GER-001": "Generador Diésel 25KVA GD-25",
-      "SKU-GER-002": "Generador a Gasolina 5KVA GG-05"
-    }
+    bannerLabel: '🇦🇷 Régimen Impositivo Argentina — precios con impuestos incluidos',
+    heroDesc: 'API mock con datos reales de equipos industriales, con impuestos argentinos incorporados en los precios en tiempo real.',
+    catalogTitle: 'Catálogo de Productos — Haga clic para consultar precio',
+    explorerNote: '→ usado por Agentforce · impuestos AR incluidos',
+    priceClass: 'ar', discountSuffix: 'descuento revendedor',
+  },
+  mx: {
+    name: 'México', flag: '🇲🇽',
+    currency: 'MXN', currencySymbol: 'MXN', locale: 'es-MX',
+    bannerClass: 'mx', fxRate: 17.16,
+    taxes: {
+      'Compressores':       { 'IVA': 16, 'Derecho de Importación': 5 },
+      'Bombas':             { 'IVA': 16, 'Derecho de Importación': 5 },
+      'Motores':            { 'IVA': 16, 'Derecho de Importación': 5 },
+      'Geradores':          { 'IVA': 16, 'Derecho de Importación': 5 },
+      'Tratamento de Ar':   { 'IVA': 16, 'Derecho de Importación': 5 },
+      'Peças de Reposição': { 'IVA': 16, 'Derecho de Importación': 8 },
+    },
+    bannerLabel: '🇲🇽 Régimen Fiscal México — precios con IVA + Importación incluidos',
+    heroDesc: 'API mock con datos reales de equipos industriales, con impuestos mexicanos (IVA 16% + Derecho de Importación) incorporados en tiempo real.',
+    catalogTitle: 'Catálogo de Productos — Haga clic para consultar precio',
+    explorerNote: '→ usado por Agentforce · impuestos MX incluidos',
+    priceClass: 'mx', discountSuffix: 'descuento revendedor',
   }
-};
-
-function changeLanguage(lang) {
-  currentLang = lang;
-  localStorage.setItem('language', lang);
-  
-  // Update active button
-  document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.lang === lang);
-  });
-  
-  // Update all translatable elements
-  const t = translations[lang];
-  document.querySelector('.hero h1').innerHTML = t.title;
-  document.querySelector('.hero p').textContent = t.subtitle;
-  document.querySelector('.base-url-box span').textContent = t.baseUrl;
-  document.querySelector('.token-box span:first-child').textContent = t.bearerToken;
-  document.querySelectorAll('.copy-btn').forEach(btn => {
-    if (btn.textContent.includes('📋')) {
-      btn.textContent = '📋 ' + t.copy;
-    }
-  });
-  
-  // Update section titles
-  const sections = document.querySelectorAll('.section-title');
-  if (sections[0]) sections[0].innerHTML = t.catalogTitle + '<span style="flex:1;height:1px;background:var(--border);margin-left:12px;"></span>';
-  if (sections[1]) sections[1].innerHTML = t.priceComparison + '<span style="flex:1;height:1px;background:var(--border);margin-left:12px;"></span>';
-  if (sections[2]) sections[2].innerHTML = t.apiExplorer + '<span style="flex:1;height:1px;background:var(--border);margin-left:12px;"></span>';
-  if (sections[3]) sections[3].innerHTML = t.salesforceConfig + '<span style="flex:1;height:1px;background:var(--border);margin-left:12px;"></span>';
-  
-  document.getElementById('searchInput').placeholder = t.searchPlaceholder;
-  document.querySelector('.btn-export').innerHTML = '📥 ' + t.exportCSV;
-  document.querySelector('.chart-title').textContent = t.chartTitle;
-  document.querySelector('.history-title').textContent = '📋 ' + t.historyTitle;
-  document.querySelector('.btn-send').innerHTML = '▶ ' + t.execute;
-  document.querySelector('.btn-copy').innerHTML = '📋 ' + t.copyJSON;
-  document.querySelector('footer .container').textContent = t.footer;
-  
-  // Update endpoint label
-  const endpointLabel = document.getElementById('endpointLabel');
-  if (endpointLabel) endpointLabel.textContent = t.endpointLabel;
-  
-  // Update Salesforce section
-  const sfTitle1 = document.getElementById('sfTitle1');
-  const sfLabel1 = document.getElementById('sfLabel1');
-  const sfTitle2 = document.getElementById('sfTitle2');
-  const sfTitle3 = document.getElementById('sfTitle3');
-  const sfExample = document.getElementById('sfExample');
-  
-  if (sfTitle1) sfTitle1.textContent = t.sfTitle1;
-  if (sfLabel1) sfLabel1.textContent = t.sfLabel1;
-  if (sfTitle2) sfTitle2.textContent = t.sfTitle2;
-  if (sfTitle3) sfTitle3.textContent = t.sfTitle3;
-  if (sfExample) sfExample.textContent = t.sfExample;
-  
-  // Update response body placeholder
-  const responseBody = document.getElementById('responseBody');
-  if (responseBody && responseBody.textContent.trim().length < 200) {
-    responseBody.textContent = t.selectResponse;
-  }
-  
-  // Reset filter to "All" in new language
-  currentFilter = t.allCategories;
-  currentFilterOriginal = t.allCategories;
-  
-  // Update everything
-  renderCategoryFilters();
-  renderProducts();
-  renderTable();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// THEME TOGGLE
-// ═══════════════════════════════════════════════════════════════════════════
-
-function toggleTheme() {
-  const html = document.documentElement;
-  const currentTheme = html.getAttribute('data-theme');
-  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-  html.setAttribute('data-theme', newTheme);
-  document.getElementById('themeIcon').textContent = newTheme === 'light' ? '☀️' : '🌙';
-  localStorage.setItem('theme', newTheme);
-  
-  // Recreate chart with correct colors
-  const chartCanvas = document.getElementById('priceChart');
-  const oldChart = Chart.getChart(chartCanvas);
-  if (oldChart) {
-    oldChart.destroy();
-  }
-  renderChart();
+// ─── MOCK Prices (25 products — all original fields preserved) ────────────
+const MOCK_PRICES = {
+  // ── Compressores ──────────────────────────────────────────────────────
+  "SKU-COMP-001": { id:1,  product_code:"SKU-COMP-001",  product_name:"Compressor de Ar Industrial XR-200",       unit_price:4850.00,  currency:"USD", price_brl:29100.00,  price_mxn:83220.00,   price_ars:4656000.00,  discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-COMP-002": { id:2,  product_code:"SKU-COMP-002",  product_name:"Compressor de Parafuso Industrial SR-500", unit_price:12400.00, currency:"USD", price_brl:74400.00,  price_mxn:212880.00,  price_ars:11904000.00, discount_reseller_pct:15, discount_volume_10_pct:6, discount_volume_20_pct:10, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-COMP-003": { id:3,  product_code:"SKU-COMP-003",  product_name:"Secador Frigorífico de Ar SF-100",         unit_price:3100.00,  currency:"USD", price_brl:18600.00,  price_mxn:53187.00,   price_ars:2976000.00,  discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-COMP-004": { id:4,  product_code:"SKU-COMP-004",  product_name:"Compressor de Alta Pressão AP-350",        unit_price:8900.00,  currency:"USD", price_brl:53400.00,  price_mxn:152724.00,  price_ars:8544000.00,  discount_reseller_pct:13, discount_volume_10_pct:5, discount_volume_20_pct:9,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-COMP-005": { id:5,  product_code:"SKU-COMP-005",  product_name:"Compressor Portátil CP-100",               unit_price:1650.00,  currency:"USD", price_brl:9900.00,   price_mxn:28314.00,   price_ars:1584000.00,  discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7,  last_updated:"2026-03-01T00:00:00Z" },
+  // ── Bombas ────────────────────────────────────────────────────────────
+  "SKU-BOMB-001": { id:6,  product_code:"SKU-BOMB-001",  product_name:"Bomba Hidráulica BH-50",                   unit_price:2750.00,  currency:"USD", price_brl:16500.00,  price_mxn:47190.00,   price_ars:2640000.00,  discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-BOMB-002": { id:7,  product_code:"SKU-BOMB-002",  product_name:"Bomba Centrífuga BC-200",                  unit_price:1890.00,  currency:"USD", price_brl:11340.00,  price_mxn:32427.00,   price_ars:1814400.00,  discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-BOMB-003": { id:8,  product_code:"SKU-BOMB-003",  product_name:"Bomba de Vácuo Industrial BV-30",          unit_price:3400.00,  currency:"USD", price_brl:20400.00,  price_mxn:58344.00,   price_ars:3264000.00,  discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-BOMB-004": { id:9,  product_code:"SKU-BOMB-004",  product_name:"Bomba Submersível BS-400",                 unit_price:2200.00,  currency:"USD", price_brl:13200.00,  price_mxn:37752.00,   price_ars:2112000.00,  discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7,  last_updated:"2026-03-01T00:00:00Z" },
+  // ── Motores ───────────────────────────────────────────────────────────
+  "SKU-MOTOR-001":{ id:10, product_code:"SKU-MOTOR-001", product_name:"Motor Elétrico Trifásico ME-300",          unit_price:3200.00,  currency:"USD", price_brl:19200.00,  price_mxn:54912.00,   price_ars:3072000.00,  discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-MOTOR-002":{ id:11, product_code:"SKU-MOTOR-002", product_name:"Motor a Diesel Industrial MD-450",         unit_price:18500.00, currency:"USD", price_brl:111000.00, price_mxn:317370.00,  price_ars:17760000.00, discount_reseller_pct:18, discount_volume_10_pct:7, discount_volume_20_pct:12, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-MOTOR-003":{ id:12, product_code:"SKU-MOTOR-003", product_name:"Motor de Corrente Contínua MCC-150",       unit_price:2800.00,  currency:"USD", price_brl:16800.00,  price_mxn:48048.00,   price_ars:2688000.00,  discount_reseller_pct:12, discount_volume_10_pct:5, discount_volume_20_pct:8,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-MOTOR-004":{ id:13, product_code:"SKU-MOTOR-004", product_name:"Motor Servo Industrial MS-200",            unit_price:5600.00,  currency:"USD", price_brl:33600.00,  price_mxn:96096.00,   price_ars:5376000.00,  discount_reseller_pct:14, discount_volume_10_pct:6, discount_volume_20_pct:10, last_updated:"2026-03-01T00:00:00Z" },
+  // ── Geradores ─────────────────────────────────────────────────────────
+  "SKU-GERA-001": { id:14, product_code:"SKU-GERA-001",  product_name:"Gerador Industrial GI-500KVA",             unit_price:42000.00, currency:"USD", price_brl:252000.00, price_mxn:720720.00,  price_ars:40320000.00, discount_reseller_pct:18, discount_volume_10_pct:7, discount_volume_20_pct:12, last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-GERA-002": { id:15, product_code:"SKU-GERA-002",  product_name:"Gerador Silencioso GS-250KVA",             unit_price:26500.00, currency:"USD", price_brl:159000.00, price_mxn:454740.00,  price_ars:25440000.00, discount_reseller_pct:16, discount_volume_10_pct:6, discount_volume_20_pct:10, last_updated:"2026-03-01T00:00:00Z" },
+  // ── Tratamento de Ar ──────────────────────────────────────────────────
+  "SKU-TRAT-001": { id:16, product_code:"SKU-TRAT-001",  product_name:"Filtro Coalescente FC-200",                unit_price:680.00,   currency:"USD", price_brl:4080.00,   price_mxn:11668.80,   price_ars:652800.00,   discount_reseller_pct:8,  discount_volume_10_pct:3, discount_volume_20_pct:5,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-TRAT-002": { id:17, product_code:"SKU-TRAT-002",  product_name:"Purificador de Ar PA-150",                 unit_price:1420.00,  currency:"USD", price_brl:8520.00,   price_mxn:24367.20,   price_ars:1363200.00,  discount_reseller_pct:10, discount_volume_10_pct:4, discount_volume_20_pct:7,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-TRAT-003": { id:18, product_code:"SKU-TRAT-003",  product_name:"Regulador de Pressão RP-10BAR",            unit_price:320.00,   currency:"USD", price_brl:1920.00,   price_mxn:5491.20,    price_ars:307200.00,   discount_reseller_pct:8,  discount_volume_10_pct:3, discount_volume_20_pct:5,  last_updated:"2026-03-01T00:00:00Z" },
+  // ── Peças de Reposição ────────────────────────────────────────────────
+  "SKU-PECA-001": { id:19, product_code:"SKU-PECA-001",  product_name:"Filtro de Ar FA-XR200",                   unit_price:85.00,    currency:"USD", price_brl:510.00,    price_mxn:1458.15,    price_ars:81600.00,    discount_reseller_pct:8,  discount_volume_10_pct:3, discount_volume_20_pct:5,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-PECA-002": { id:20, product_code:"SKU-PECA-002",  product_name:"Válvula de Segurança VS-12BAR",            unit_price:145.00,   currency:"USD", price_brl:870.00,    price_mxn:2487.45,    price_ars:139200.00,   discount_reseller_pct:8,  discount_volume_10_pct:3, discount_volume_20_pct:5,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-PECA-003": { id:21, product_code:"SKU-PECA-003",  product_name:"Óleo Lubrificante Compressor OL-46",       unit_price:38.00,    currency:"USD", price_brl:228.00,    price_mxn:652.14,     price_ars:36480.00,    discount_reseller_pct:5,  discount_volume_10_pct:2, discount_volume_20_pct:4,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-PECA-004": { id:22, product_code:"SKU-PECA-004",  product_name:"Correia de Transmissão CT-B50",            unit_price:62.00,    currency:"USD", price_brl:372.00,    price_mxn:1063.92,    price_ars:59520.00,    discount_reseller_pct:6,  discount_volume_10_pct:2, discount_volume_20_pct:4,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-PECA-005": { id:23, product_code:"SKU-PECA-005",  product_name:"Rolamento Esférico RE-6205",               unit_price:28.00,    currency:"USD", price_brl:168.00,    price_mxn:480.48,     price_ars:26880.00,    discount_reseller_pct:5,  discount_volume_10_pct:2, discount_volume_20_pct:4,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-PECA-006": { id:24, product_code:"SKU-PECA-006",  product_name:"Mangueira Hidráulica MH-3/4",              unit_price:48.00,    currency:"USD", price_brl:288.00,    price_mxn:823.68,     price_ars:46080.00,    discount_reseller_pct:6,  discount_volume_10_pct:2, discount_volume_20_pct:4,  last_updated:"2026-03-01T00:00:00Z" },
+  "SKU-PECA-007": { id:25, product_code:"SKU-PECA-007",  product_name:"Manômetro Digital MD-600BAR",              unit_price:195.00,   currency:"USD", price_brl:1170.00,   price_mxn:3346.20,    price_ars:187200.00,   discount_reseller_pct:8,  discount_volume_10_pct:3, discount_volume_20_pct:5,  last_updated:"2026-03-01T00:00:00Z" },
 }
 
-// Load saved theme
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme) {
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  document.getElementById('themeIcon').textContent = savedTheme === 'light' ? '☀️' : '🌙';
+// ─── Mock Products (25 — card display data) ───────────────────────────────
+const MOCK_PRODUCTS = [
+  { id:"SKU-COMP-001",  name:"Compressor de Ar Industrial XR-200",       nameES:"Compresor de Aire Industrial XR-200",       category:"Compressores",       brand:"TechAir",      unit_price:4850,  stock:42,  discount_reseller_pct:12 },
+  { id:"SKU-COMP-002",  name:"Compressor de Parafuso Industrial SR-500", nameES:"Compresor de Tornillo Industrial SR-500",   category:"Compressores",       brand:"TechAir",      unit_price:12400, stock:18,  discount_reseller_pct:15 },
+  { id:"SKU-COMP-003",  name:"Secador Frigorífico de Ar SF-100",         nameES:"Secador Frigorífico de Aire SF-100",        category:"Compressores",       brand:"TechAir",      unit_price:3100,  stock:28,  discount_reseller_pct:12 },
+  { id:"SKU-COMP-004",  name:"Compressor de Alta Pressão AP-350",        nameES:"Compresor de Alta Presión AP-350",          category:"Compressores",       brand:"TechAir",      unit_price:8900,  stock:14,  discount_reseller_pct:13 },
+  { id:"SKU-COMP-005",  name:"Compressor Portátil CP-100",               nameES:"Compresor Portátil CP-100",                 category:"Compressores",       brand:"TechAir",      unit_price:1650,  stock:60,  discount_reseller_pct:10 },
+  { id:"SKU-BOMB-001",  name:"Bomba Hidráulica BH-50",                   nameES:"Bomba Hidráulica BH-50",                   category:"Bombas",             brand:"HydroForce",   unit_price:2750,  stock:65,  discount_reseller_pct:10 },
+  { id:"SKU-BOMB-002",  name:"Bomba Centrífuga BC-200",                  nameES:"Bomba Centrífuga BC-200",                  category:"Bombas",             brand:"FluidMax",     unit_price:1890,  stock:94,  discount_reseller_pct:10 },
+  { id:"SKU-BOMB-003",  name:"Bomba de Vácuo Industrial BV-30",          nameES:"Bomba de Vacío Industrial BV-30",           category:"Bombas",             brand:"HydroForce",   unit_price:3400,  stock:31,  discount_reseller_pct:10 },
+  { id:"SKU-BOMB-004",  name:"Bomba Submersível BS-400",                 nameES:"Bomba Sumergible BS-400",                  category:"Bombas",             brand:"FluidMax",     unit_price:2200,  stock:47,  discount_reseller_pct:10 },
+  { id:"SKU-MOTOR-001", name:"Motor Elétrico Trifásico ME-300",          nameES:"Motor Eléctrico Trifásico ME-300",         category:"Motores",            brand:"ElectroDrive", unit_price:3200,  stock:37,  discount_reseller_pct:12 },
+  { id:"SKU-MOTOR-002", name:"Motor a Diesel Industrial MD-450",         nameES:"Motor Diesel Industrial MD-450",           category:"Motores",            brand:"PowerGen",     unit_price:18500, stock:9,   discount_reseller_pct:18 },
+  { id:"SKU-MOTOR-003", name:"Motor de Corrente Contínua MCC-150",       nameES:"Motor de Corriente Continua MCC-150",      category:"Motores",            brand:"ElectroDrive", unit_price:2800,  stock:22,  discount_reseller_pct:12 },
+  { id:"SKU-MOTOR-004", name:"Motor Servo Industrial MS-200",            nameES:"Motor Servo Industrial MS-200",            category:"Motores",            brand:"ElectroDrive", unit_price:5600,  stock:15,  discount_reseller_pct:14 },
+  { id:"SKU-GERA-001",  name:"Gerador Industrial GI-500KVA",             nameES:"Generador Industrial GI-500KVA",           category:"Geradores",          brand:"PowerGen",     unit_price:42000, stock:5,   discount_reseller_pct:18 },
+  { id:"SKU-GERA-002",  name:"Gerador Silencioso GS-250KVA",             nameES:"Generador Silencioso GS-250KVA",           category:"Geradores",          brand:"PowerGen",     unit_price:26500, stock:8,   discount_reseller_pct:16 },
+  { id:"SKU-TRAT-001",  name:"Filtro Coalescente FC-200",                nameES:"Filtro Coalescente FC-200",                category:"Tratamento de Ar",   brand:"TechAir",      unit_price:680,   stock:120, discount_reseller_pct:8  },
+  { id:"SKU-TRAT-002",  name:"Purificador de Ar PA-150",                 nameES:"Purificador de Aire PA-150",               category:"Tratamento de Ar",   brand:"TechAir",      unit_price:1420,  stock:55,  discount_reseller_pct:10 },
+  { id:"SKU-TRAT-003",  name:"Regulador de Pressão RP-10BAR",            nameES:"Regulador de Presión RP-10BAR",            category:"Tratamento de Ar",   brand:"SafeValve",    unit_price:320,   stock:200, discount_reseller_pct:8  },
+  { id:"SKU-PECA-001",  name:"Filtro de Ar FA-XR200",                   nameES:"Filtro de Aire FA-XR200",                  category:"Peças de Reposição", brand:"TechAir",      unit_price:85,    stock:320, discount_reseller_pct:8  },
+  { id:"SKU-PECA-002",  name:"Válvula de Segurança VS-12BAR",            nameES:"Válvula de Seguridad VS-12BAR",            category:"Peças de Reposição", brand:"SafeValve",    unit_price:145,   stock:185, discount_reseller_pct:8  },
+  { id:"SKU-PECA-003",  name:"Óleo Lubrificante Compressor OL-46",       nameES:"Aceite Lubricante Compresor OL-46",        category:"Peças de Reposição", brand:"LubraTech",    unit_price:38,    stock:500, discount_reseller_pct:5  },
+  { id:"SKU-PECA-004",  name:"Correia de Transmissão CT-B50",            nameES:"Correa de Transmisión CT-B50",             category:"Peças de Reposição", brand:"BeltPro",      unit_price:62,    stock:410, discount_reseller_pct:6  },
+  { id:"SKU-PECA-005",  name:"Rolamento Esférico RE-6205",               nameES:"Rodamiento Esférico RE-6205",              category:"Peças de Reposição", brand:"BearTech",     unit_price:28,    stock:850, discount_reseller_pct:5  },
+  { id:"SKU-PECA-006",  name:"Mangueira Hidráulica MH-3/4",              nameES:"Manguera Hidráulica MH-3/4",               category:"Peças de Reposição", brand:"HydroForce",   unit_price:48,    stock:620, discount_reseller_pct:6  },
+  { id:"SKU-PECA-007",  name:"Manômetro Digital MD-600BAR",              nameES:"Manómetro Digital MD-600BAR",              category:"Peças de Reposição", brand:"SafeValve",    unit_price:195,   stock:175, discount_reseller_pct:8  },
+]
+
+// ─── Tax Helpers ──────────────────────────────────────────────────────────
+function getTaxes(category, lang) {
+  const r = TAX_REGIMES[lang]
+  return r.taxes[category] || r.taxes['Compressores']
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// RENDER PRODUCTS
-// ═══════════════════════════════════════════════════════════════════════════
-
-function getFilteredProducts() {
-  const t = translations[currentLang];
-  const allLabel = t.allCategories;
-  
-  return MOCK_PRODUCTS.filter(p => {
-    const matchesCategory = currentFilter === allLabel || p.category === currentFilterOriginal;
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         p.id.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+function calcTax(usdPrice, category, lang) {
+  const r = TAX_REGIMES[lang]
+  const taxes = getTaxes(category, lang)
+  const totalPct = Object.values(taxes).reduce((a, b) => a + b, 0)
+  const baseLocal = usdPrice * r.fxRate
+  const withTaxes = baseLocal * (1 + totalPct / 100)
+  return { baseLocal, withTaxes, taxes, totalPct }
 }
 
+function fmtLocal(val, lang) {
+  const r = TAX_REGIMES[lang]
+  return val.toLocaleString(r.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+function translateCategory(cat) {
+  return {
+    'Compressores':'Compresores', 'Bombas':'Bombas', 'Motores':'Motores',
+    'Geradores':'Generadores', 'Tratamento de Ar':'Tratamiento de Aire',
+    'Peças de Reposição':'Repuestos'
+  }[cat] || cat
+}
+
+// ─── Language Toggle ──────────────────────────────────────────────────────
+function setLang(lang) {
+  currentLang = lang
+  const r = TAX_REGIMES[lang]
+
+  document.getElementById('btnPT').className = 'lang-btn' + (lang === 'pt' ? ' br active' : '')
+  document.getElementById('btnES').className = 'lang-btn' + (lang === 'es' ? ' ar active' : '')
+  document.getElementById('btnMX').className = 'lang-btn' + (lang === 'mx' ? ' mx active' : '')
+
+  document.getElementById('heroDesc').textContent     = r.heroDesc
+  document.getElementById('catalogTitle').textContent = r.catalogTitle
+  document.getElementById('explorerNote').textContent  = r.explorerNote
+
+  const banner = document.getElementById('taxBanner')
+  banner.className = `tax-banner ${r.bannerClass}`
+  document.getElementById('taxBannerTitle').textContent = r.bannerLabel
+
+  const sampleTaxes = r.taxes['Compressores']
+  document.getElementById('taxPills').innerHTML =
+    Object.entries(sampleTaxes).map(([n, p]) =>
+      `<span class="tax-pill ${r.bannerClass}">${n} ${p}%</span>`
+    ).join('') + `<span class="tax-pill ${r.bannerClass}" style="opacity:0.5">Peças: encargo extra</span>`
+
+  renderProducts()
+
+  const pill = document.getElementById('statusPill')
+  if (pill.classList.contains('status-200') || pill.classList.contains('status-404')) callAPI()
+}
+
+// ─── Render Products ──────────────────────────────────────────────────────
 function renderProducts() {
-  const filtered = getFilteredProducts();
-  const grid = document.getElementById('productsGrid');
-  const t = translations[currentLang];
-  
-  grid.innerHTML = filtered.map(p => {
-    const translatedName = t.products && t.products[p.id] ? t.products[p.id] : p.name;
-    const translatedCategory = t.categories && t.categories[p.category] ? t.categories[p.category] : p.category;
-    
+  const r = TAX_REGIMES[currentLang]
+  const grid = document.getElementById('productsGrid')
+  const isES = currentLang === 'es' || currentLang === 'mx'
+
+  grid.innerHTML = MOCK_PRODUCTS.map(p => {
+    const name       = isES ? p.nameES : p.name
+    const catDisplay = isES ? translateCategory(p.category) : p.category
+    const pc         = r.priceClass
+    const { baseLocal, withTaxes, taxes, totalPct } = calcTax(p.unit_price, p.category, currentLang)
+
+    const taxRowsHTML = Object.entries(taxes).map(([n, pct]) => {
+      const amt = baseLocal * (pct / 100)
+      return `<div class="card-tax-row ${pc}"><span>${n} ${pct}%</span><span>+ ${r.currencySymbol} ${fmtLocal(amt, currentLang)}</span></div>`
+    }).join('')
+
     return `
     <div class="product-card" id="card-${p.id}" onclick="selectProduct('${p.id}')">
       <div class="card-stock"></div>
       <div class="card-header">
         <span class="card-sku">${p.id}</span>
-        <span class="card-category">${translatedCategory}</span>
+        <span class="card-category">${catDisplay}</span>
       </div>
-      <div class="card-name">${translatedName}</div>
+      <div class="card-name">${name}</div>
       <div class="card-brand">${p.brand}</div>
       <div class="card-price">$${p.unit_price.toLocaleString('pt-BR')}<span>USD</span></div>
-      <div class="card-discount">🏷 ${p.discount_reseller_pct}% ${t.discount}</div>
-    </div>
-  `;
-  }).join('');
+      <div class="card-discount">🏷 ${p.discount_reseller_pct}% ${r.discountSuffix}</div>
+      <div class="card-tax-block ${pc}">
+        <div class="card-tax-price ${pc}">${r.currencySymbol} ${fmtLocal(withTaxes, currentLang)}</div>
+        <div class="card-tax-caption">c/ impostos · ${r.currency} · $1 = ${r.fxRate}</div>
+        <div class="card-tax-rows">
+          <div class="card-tax-row ${pc} base">
+            <span>Base ${r.currency}</span>
+            <span>${r.currencySymbol} ${fmtLocal(baseLocal, currentLang)}</span>
+          </div>
+          ${taxRowsHTML}
+          <div class="card-tax-total ${pc}">
+            <span>Total impostos ${totalPct.toFixed(2)}%</span>
+            <span>+ ${r.currencySymbol} ${fmtLocal(withTaxes - baseLocal, currentLang)}</span>
+          </div>
+        </div>
+      </div>
+    </div>`
+  }).join('')
 }
 
-function renderTable() {
-  const filtered = getFilteredProducts();
-  const tbody = document.getElementById('tableBody');
-  const t = translations[currentLang];
-  
-  tbody.innerHTML = filtered.map(p => {
-    const translatedName = t.products && t.products[p.id] ? t.products[p.id] : p.name;
-    const translatedCategory = t.categories && t.categories[p.category] ? t.categories[p.category] : p.category;
-    
-    return `
-    <tr onclick="selectProduct('${p.id}')">
-      <td><span class="table-sku">${p.id}</span></td>
-      <td><strong>${translatedName}</strong></td>
-      <td><span class="table-category">${translatedCategory}</span></td>
-      <td>${p.brand}</td>
-      <td class="table-price">$${p.unit_price.toLocaleString('pt-BR')}</td>
-      <td>${p.discount_reseller_pct}%</td>
-    </tr>
-  `;
-  }).join('');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// FILTERS AND SEARCH
-// ═══════════════════════════════════════════════════════════════════════════
-
-function renderCategoryFilters() {
-  const t = translations[currentLang];
-  const allLabel = t.allCategories;
-  const uniqueCategories = [...new Set(MOCK_PRODUCTS.map(p => p.category))];
-  const translatedCategories = uniqueCategories.map(cat => 
-    t.categories && t.categories[cat] ? t.categories[cat] : cat
-  );
-  const categories = [allLabel, ...translatedCategories];
-  const originalCategories = [allLabel, ...uniqueCategories];
-  const container = document.getElementById('categoryFilter');
-  
-  container.innerHTML = categories.map((cat, index) => `
-    <button class="filter-btn ${cat === currentFilter ? 'active' : ''}" 
-            onclick="setFilter('${cat}', '${originalCategories[index]}')">${cat}</button>
-  `).join('');
-}
-
-function setFilter(translatedCategory, originalCategory) {
-  currentFilter = translatedCategory;
-  currentFilterOriginal = originalCategory || translatedCategory;
-  renderCategoryFilters();
-  renderProducts();
-  renderTable();
-}
-
-function filterProducts() {
-  searchTerm = document.getElementById('searchInput').value;
-  renderProducts();
-  renderTable();
-}
-
-function switchView(view) {
-  currentView = view;
-  
-  if (view === 'grid') {
-    document.getElementById('productsGrid').classList.remove('hidden');
-    document.getElementById('productsTable').classList.add('hidden');
-    document.getElementById('gridViewBtn').classList.add('active');
-    document.getElementById('tableViewBtn').classList.remove('active');
-  } else {
-    document.getElementById('productsGrid').classList.add('hidden');
-    document.getElementById('productsTable').classList.remove('hidden');
-    document.getElementById('gridViewBtn').classList.remove('active');
-    document.getElementById('tableViewBtn').classList.add('active');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// CHART
-// ═══════════════════════════════════════════════════════════════════════════
-
-function renderChart() {
-  const ctx = document.getElementById('priceChart').getContext('2d');
-  const sorted = [...MOCK_PRODUCTS].sort((a, b) => b.unit_price - a.unit_price).slice(0, 10);
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-  
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: sorted.map(p => p.id),
-      datasets: [{
-        label: 'Preço (USD)',
-        data: sorted.map(p => p.unit_price),
-        backgroundColor: isDark ? 'rgba(14, 165, 233, 0.7)' : 'rgba(10, 37, 64, 1)',
-        borderColor: isDark ? 'rgba(14, 165, 233, 1)' : 'rgba(10, 37, 64, 1)',
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            callback: function(value) {
-              return '$' + value.toLocaleString();
-            }
-          }
-        }
-      }
-    }
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// API EXPLORER
-// ═══════════════════════════════════════════════════════════════════════════
-
+// ─── Quick Buttons ────────────────────────────────────────────────────────
 function renderQuickButtons() {
-  const container = document.getElementById('quickBtns');
+  const container = document.getElementById('quickBtns')
   const endpoints = [
-    { label: '/prices', path: '/prices' },
-    { label: '/products', path: '/products' },
-    { label: '/categories', path: '/categories' },
-    { label: '404 test', path: '/prices/SKU-INVALIDO-999' }
-  ];
-  container.innerHTML = endpoints.map(e =>
-    `<button class="quick-btn" onclick="setEndpoint('${e.path}')">${e.label}</button>`
-  ).join('') + MOCK_PRODUCTS.slice(0,5).map(p =>
-    `<button class="quick-btn" onclick="setEndpoint('/prices/${p.id}')">/prices/${p.id}</button>`
-  ).join('');
+    { label:'/prices',     path:'/prices'     },
+    { label:'/products',   path:'/products'   },
+    { label:'/categories', path:'/categories' },
+    { label:'404 test',    path:'/prices/SKU-INVALIDO-999' }
+  ]
+  container.innerHTML =
+    endpoints.map(e => `<button class="quick-btn" onclick="setEndpoint('${e.path}')">${e.label}</button>`).join('') +
+    MOCK_PRODUCTS.slice(0,5).map(p =>
+      `<button class="quick-btn" onclick="setEndpoint('/prices/${p.id}')">/prices/${p.id}</button>`
+    ).join('')
 }
 
-function setEndpoint(path) {
-  document.getElementById('urlInput').value = path;
-}
+function setEndpoint(path) { document.getElementById('urlInput').value = path }
 
 function selectProduct(sku) {
-  document.querySelectorAll('.product-card').forEach(c => c.classList.remove('active'));
-  const card = document.getElementById('card-' + sku);
-  if (card) card.classList.add('active');
-  setEndpoint('/prices/' + sku);
-  callAPI();
+  document.querySelectorAll('.product-card').forEach(c => c.classList.remove('active'))
+  document.getElementById('card-' + sku).classList.add('active')
+  setEndpoint('/prices/' + sku)
+  callAPI()
 }
 
+// ─── Syntax Highlight ─────────────────────────────────────────────────────
 function syntaxHighlight(json) {
-  json = JSON.stringify(json, null, 2);
-  return json
-    .replace(/("[\w_]+")\s*:/g, '<span class="json-key">$1</span>:')
-    .replace(/:\s*(".*?")/g, ': <span class="json-string">$1</span>')
-    .replace(/:\s*(\d+\.?\d*)/g, ': <span class="json-number">$1</span>')
-    .replace(/:\s*(true|false)/g, ': <span class="json-bool">$1</span>')
-    .replace(/:\s*(null)/g, ': <span class="json-null">$1</span>');
+  const str = JSON.stringify(json, null, 2)
+  return str
+    .replace(/("[\w_]+")\s*:/g,   '<span class="json-key">$1</span>:')
+    .replace(/:\s*(".*?")/g,       ': <span class="json-string">$1</span>')
+    .replace(/:\s*(-?\d+\.?\d*)/g, ': <span class="json-number">$1</span>')
+    .replace(/:\s*(true|false)/g,  ': <span class="json-bool">$1</span>')
+    .replace(/:\s*(null)/g,        ': <span class="json-null">$1</span>')
 }
 
-function callAPI() {
-  const path = document.getElementById('urlInput').value.trim();
-  const btn = document.getElementById('sendBtn');
-  const pill = document.getElementById('statusPill');
-  const body = document.getElementById('responseBody');
-  const meta = document.getElementById('responseMeta');
+// ─── Build enriched price response ────────────────────────────────────────
+function buildPriceResult(code) {
+  const orig = MOCK_PRICES[code]
+  if (!orig) return null
 
-  btn.disabled = true;
-  pill.className = 'status-pill status-waiting';
-  pill.textContent = 'Aguardando...';
-  body.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
-  meta.textContent = '';
+  const product = MOCK_PRODUCTS.find(p => p.id === code)
+  const r = TAX_REGIMES[currentLang]
+  const { baseLocal, withTaxes, taxes, totalPct } = calcTax(orig.unit_price, product.category, currentLang)
+
+  const breakdown = {}
+  Object.entries(taxes).forEach(([n, pct]) => {
+    const key = n.toLowerCase().replace(/[\s\/]+/g, '_')
+    breakdown[key + '_pct']    = pct
+    breakdown[key + '_amount'] = parseFloat((baseLocal * pct / 100).toFixed(2))
+  })
+  breakdown['total_pct']    = parseFloat(totalPct.toFixed(2))
+  breakdown['total_amount'] = parseFloat((withTaxes - baseLocal).toFixed(2))
+
+  const result = Object.assign({}, orig)
+  const isES = currentLang === 'es' || currentLang === 'mx'
+  if (isES) result.product_name = product.nameES
+
+  result.tax_regime           = r.name
+  result.tax_currency         = r.currency
+  result.fx_rate_usd          = r.fxRate
+  result.price_base_local     = parseFloat(baseLocal.toFixed(2))
+  result.price_with_taxes     = parseFloat(withTaxes.toFixed(2))
+  result.price_after_discount = parseFloat((withTaxes * (1 - orig.discount_reseller_pct / 100)).toFixed(2))
+  result.tax_breakdown        = breakdown
+
+  return result
+}
+
+// ─── API Call ─────────────────────────────────────────────────────────────
+function callAPI() {
+  const path = document.getElementById('urlInput').value.trim()
+  const btn  = document.getElementById('sendBtn')
+  const pill = document.getElementById('statusPill')
+  const body = document.getElementById('responseBody')
+  const meta = document.getElementById('responseMeta')
+  const r    = TAX_REGIMES[currentLang]
+  const isES = currentLang === 'es' || currentLang === 'mx'
+
+  btn.disabled     = true
+  pill.className   = 'status-pill status-waiting'
+  pill.textContent = 'Aguardando...'
+  body.innerHTML   = '<div class="loading-dots"><span></span><span></span><span></span></div>'
+  meta.textContent = ''
 
   setTimeout(() => {
-    const start = Date.now();
-    let result, status;
+    const t0 = Date.now()
+    let result, status
 
     if (path === '/prices') {
-      result = Object.values(MOCK_PRICES);
-      status = 200;
+      result = Object.keys(MOCK_PRICES).map(k => buildPriceResult(k))
+      status = 200
+
     } else if (path === '/products') {
-      result = MOCK_PRODUCTS;
-      status = 200;
+      result = MOCK_PRODUCTS.map(p => ({
+        id: p.id,
+        name: isES ? p.nameES : p.name,
+        category: isES ? translateCategory(p.category) : p.category,
+        brand: p.brand,
+        unit_price: p.unit_price,
+        currency: 'USD',
+        stock: p.stock,
+        discount_reseller_pct: p.discount_reseller_pct
+      }))
+      status = 200
+
     } else if (path === '/categories') {
-      result = [
-        { id:1, name:"Compressores", description:"Compressores de ar industriais" },
-        { id:2, name:"Bombas", description:"Bombas hidráulicas e centrífugas" },
-        { id:3, name:"Motores", description:"Motores elétricos e a combustão" },
-        { id:4, name:"Peças de Reposição", description:"Filtros, válvulas e lubrificantes" },
-        { id:5, name:"Válvulas e Conexões", description:"Válvulas e sistemas de conexão" },
-        { id:6, name:"Ferramentas Elétricas", description:"Ferramentas industriais elétricas" },
-        { id:7, name:"Sistemas de Refrigeração", description:"Equipamentos de refrigeração industrial" },
-        { id:8, name:"Geradores de Energia", description:"Geradores diesel e gasolina" }
-      ];
-      status = 200;
+      result = isES ? [
+        { id:1, name:"Compresores",         description:"Compresores de aire industriales" },
+        { id:2, name:"Bombas",              description:"Bombas hidráulicas y centrífugas" },
+        { id:3, name:"Motores",             description:"Motores eléctricos y de combustión" },
+        { id:4, name:"Generadores",         description:"Generadores industriales y silenciosos" },
+        { id:5, name:"Tratamiento de Aire", description:"Secadores, purificadores y reguladores" },
+        { id:6, name:"Repuestos",           description:"Filtros, válvulas, correas y lubricantes" }
+      ] : [
+        { id:1, name:"Compressores",        description:"Compressores de ar industriais" },
+        { id:2, name:"Bombas",              description:"Bombas hidráulicas e centrífugas" },
+        { id:3, name:"Motores",             description:"Motores elétricos e a combustão" },
+        { id:4, name:"Geradores",           description:"Geradores industriais e silenciosos" },
+        { id:5, name:"Tratamento de Ar",    description:"Secadores, purificadores e reguladores" },
+        { id:6, name:"Peças de Reposição",  description:"Filtros, válvulas, correias e lubrificantes" }
+      ]
+      status = 200
+
     } else {
-      const match = path.match(/\/prices\/([A-Z0-9-]+)/i);
-      const pmatch = path.match(/\/products\/([A-Z0-9-]+)/i);
+      const match  = path.match(/\/prices\/([A-Z0-9-]+)/i)
+      const pmatch = path.match(/\/products\/([A-Z0-9-]+)/i)
+
       if (match) {
-        const code = match[1].toUpperCase();
-        result = MOCK_PRICES[code] || { error: 'Product not found', message: `No pricing data for: ${code}`, code: 404 };
-        status = MOCK_PRICES[code] ? 200 : 404;
+        const code = match[1].toUpperCase()
+        const res  = buildPriceResult(code)
+        result = res || { error: 'Product not found', message: `No pricing data for: ${code}`, code: 404 }
+        status = res ? 200 : 404
+
       } else if (pmatch) {
-        const p = MOCK_PRODUCTS.find(x => x.id === pmatch[1].toUpperCase());
-        result = p || { error: 'Product not found', code: 404 };
-        status = p ? 200 : 404;
+        const p = MOCK_PRODUCTS.find(x => x.id === pmatch[1].toUpperCase())
+        result  = p
+          ? { id: p.id, name: isES ? p.nameES : p.name, brand: p.brand,
+              unit_price: p.unit_price, currency: 'USD', stock: p.stock }
+          : { error: 'Product not found', code: 404 }
+        status = p ? 200 : 404
+
       } else {
-        result = { error: 'Endpoint not found', code: 404 };
-        status = 404;
+        result = { error: 'Endpoint not found', code: 404 }
+        status = 404
       }
     }
 
-    const elapsed = Date.now() - start + Math.floor(Math.random() * 80 + 20);
-    pill.className = `status-pill status-${status === 200 ? '200' : '404'}`;
-    pill.textContent = status === 200 ? `✓ ${status} OK` : `✗ ${status} Not Found`;
-    meta.textContent = `${elapsed}ms · application/json`;
-    body.innerHTML = syntaxHighlight(result);
-    btn.disabled = false;
-    
-    lastResponse = result;
-    addToHistory(path, status);
-  }, 400 + Math.random() * 200);
+    const elapsed = Date.now() - t0 + Math.floor(Math.random() * 80 + 20)
+    pill.className   = `status-pill status-${status === 200 ? '200' : '404'}`
+    pill.textContent = status === 200 ? `✓ ${status} OK` : `✗ ${status} Not Found`
+    meta.textContent = `${elapsed}ms · application/json · ${r.currency} · ${r.name}`
+    body.innerHTML   = syntaxHighlight(result)
+    btn.disabled = false
+  }, 400 + Math.random() * 200)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// HISTORY
-// ═══════════════════════════════════════════════════════════════════════════
-
-function addToHistory(path, status) {
-  const now = new Date();
-  const item = {
-    path,
-    status,
-    timestamp: now.toLocaleTimeString('pt-BR')
-  };
-  
-  queryHistory.unshift(item);
-  queryHistory = queryHistory.slice(0, 10); // Keep last 10
-  localStorage.setItem('queryHistory', JSON.stringify(queryHistory));
-  renderHistory();
-}
-
-function renderHistory() {
-  const container = document.getElementById('historyList');
-  if (queryHistory.length === 0) {
-    container.innerHTML = '<div style="color:var(--muted);font-size:11px;">Nenhuma consulta ainda</div>';
-    return;
-  }
-  
-  container.innerHTML = queryHistory.map((item, i) => `
-    <div class="history-item" onclick="setEndpoint('${item.path}'); callAPI();">
-      <span>${item.path}</span>
-      <span class="history-time">${item.timestamp} · ${item.status}</span>
-    </div>
-  `).join('');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// COPY & EXPORT
-// ═══════════════════════════════════════════════════════════════════════════
-
-function copyResponse() {
-  const t = translations[currentLang];
-  if (!lastResponse) {
-    showToast(t.noHistory);
-    return;
-  }
-  
-  const json = JSON.stringify(lastResponse, null, 2);
-  navigator.clipboard.writeText(json).then(() => {
-    showToast('✓ ' + t.copied);
-  }).catch(() => {
-    showToast(t.copyError);
-  });
-}
-
-function exportToCSV() {
-  const t = translations[currentLang];
-  const filtered = getFilteredProducts();
-  
-  let csv = 'SKU,Produto,Categoria,Marca,Preço USD,Desconto %\n';
-  filtered.forEach(p => {
-    csv += `"${p.id}","${p.name}","${p.category}","${p.brand}",${p.unit_price},${p.discount_reseller_pct}\n`;
-  });
-  
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'produtos-' + new Date().toISOString().split('T')[0] + '.csv';
-  link.click();
-  
-  showToast('✓ ' + t.csvExported);
-}
-
-function showToast(message) {
-  const toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2000);
-}
-
-function copyToClipboard(elementId) {
-  const t = translations[currentLang];
-  const element = document.getElementById(elementId);
-  const text = element.textContent;
-  
-  navigator.clipboard.writeText(text).then(() => {
-    showToast('✓ ' + t.copied);
-  }).catch(() => {
-    showToast(t.copyError);
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// BACK TO TOP
-// ═══════════════════════════════════════════════════════════════════════════
-
-const backToTopBtn = document.getElementById('backToTop');
-
-window.addEventListener('scroll', () => {
-  if (window.scrollY > 400) {
-    backToTopBtn.classList.add('visible');
-  } else {
-    backToTopBtn.classList.remove('visible');
-  }
-});
-
-backToTopBtn.addEventListener('click', () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════
-// INITIALIZATION
-// ═══════════════════════════════════════════════════════════════════════════
-
-renderProducts();
-renderTable();
-renderCategoryFilters();
-renderQuickButtons();
-renderHistory();
-renderChart();
-
-// Apply saved language
-if (currentLang !== 'pt') {
-  changeLanguage(currentLang);
-}
+// ─── Init ─────────────────────────────────────────────────────────────────
+renderProducts()
+renderQuickButtons()
+setLang('pt')
 
 document.getElementById('urlInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') callAPI();
-});
+  if (e.key === 'Enter') callAPI()
+})
 </script>
-
 </body>
 </html>
